@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.0
+// @version     1.01
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -11,7 +11,11 @@
 
   'use strict';
 
-  /* Function definitions */
+
+  /* Definitions */
+
+  let currentImage = 0;
+
   const httpGet = function (url) {
     return new Promise((resolve, reject) => {
       const xhttp = new XMLHttpRequest();
@@ -43,16 +47,13 @@
 
   const changeImage = function (src) {
     image.style.filter = 'brightness(75%)';
-    httpGet(src).then(() => {
-      image.src = src;
-    }).catch(() => {
       const pngSrc = src.replace('.jpg', '.png');
-      httpGet(pngSrc).then(() => {
-        image.src = pngSrc;
-      }).catch(() => {
-        image.src = src.replace('.jpg', '.gif');
-      });
-    });
+      const gifSrc = src.replace('.jpg', '.gif');
+    // Hacky way to deal with other image types, but much faster than fetch + scraping its url
+    httpGet(src)
+      .then(() => image.src = src)
+      .catch(() => httpGet(pngSrc).then(() => image.src = pngSrc))
+      .catch(() => image.src = gifSrc);
   };
 
   const jumpToImage = function (a) {
@@ -63,8 +64,8 @@
   };
 
   const createViewerIcon = function (a) {
-    const viewerIcon = document.createElement('div');
-    Object.assign(viewerIcon.style, {
+    const iconFrame = document.createElement('div');
+    Object.assign(iconFrame.style, {
       position: 'absolute',
       marginTop: '-24px',
       backgroundColor: '#ffffff',
@@ -77,14 +78,14 @@
     });
     const icon = document.createElement('i');
     icon.classList.add('icon-resize-full');
-    viewerIcon.appendChild(icon);
-    viewerIcon.onclick = event => {
+    iconFrame.appendChild(icon);
+    iconFrame.onclick = event => {
       showOverlay();
       jumpToImage(a);
       event.stopPropagation();
       event.preventDefault();
     };
-    return viewerIcon;
+    return iconFrame;
   };
 
 
@@ -117,6 +118,8 @@
 
 
   /* Creating DOM elements */
+
+  // Darken the background page
   const backgroundOverlay = document.createElement('div');
   Object.assign(backgroundOverlay.style, {
     position: 'fixed',
@@ -128,6 +131,7 @@
   });
   backgroundOverlay.onclick = hideOverlay;
 
+  // Frame anchoring the lightbox
   const imageOverlay = document.createElement('div');
   Object.assign(imageOverlay.style, {
     position: 'absolute',
@@ -140,17 +144,19 @@
   });
   imageOverlay.onclick = hideOverlay;
 
+  // Lightbox
   const imageContainer = document.createElement('div');
   Object.assign(imageContainer.style, {
     position: 'absolute',
     minHeight: '250px',
     minWidth: '250px',
+    maxWidth: '120%',
     left: '50%',
     transform: 'translateX(-50%)',
     marginTop: '25px',
-    maxWidth: '120%'
   });
 
+  // Full size image
   const image = document.createElement('img');
   Object.assign(image.style, {
     margin: 'auto',
@@ -159,12 +165,12 @@
   });
   image.onload = () => image.style.filter = null;
 
+  // Navigation overlay buttons
   const nextPrevStyle = {
     position: 'absolute',
     top: '0',
     bottom: '0',
     opacity: '0',
-    // transition: 'opacity 0.2s',
     cursor: 'pointer'
   };
   const next = document.createElement('div');
@@ -188,6 +194,7 @@
   prev.onmouseenter = () => prev.style.opacity = '1';
   prev.onmouseleave = () => prev.style.opacity = '0';
 
+  // Navigation arrows
   const arrowStyle = {
     position: 'absolute',
     top: '50%',
@@ -222,12 +229,13 @@
     a.onmouseenter = () => viewerIcon.style.display = 'initial';
     a.onmouseleave = () => viewerIcon.style.display = 'none';
   });
+  // Hacky way to get the full size links, but much faster than scraping every image page
   const imageLinks = thumbnailLinks
     .map(a => a.getElementsByTagName('img')[0])
     .filter(img => img !== undefined)
     .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
-
-  let currentImage = 0;
+  
+  // Put everything into the DOM
   hideOverlay();
   document.body.appendChild(backgroundOverlay);
   document.body.appendChild(imageOverlay)
