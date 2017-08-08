@@ -46,7 +46,12 @@
     httpGet(src).then(() => {
       image.src = src;
     }).catch(() => {
-      image.src = src.replace('.jpg', '.png');
+      const pngSrc = src.replace('.jpg', '.png');
+      httpGet(pngSrc).then(() => {
+        image.src = pngSrc;
+      }).catch(() => {
+        image.src = src.replace('.jpg', '.gif');
+      });
     });
   };
 
