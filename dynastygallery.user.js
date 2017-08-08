@@ -130,6 +130,8 @@
     right: '0',
     bottom: '0',
     left: '0',
+    marginLeft: '-25%',
+    marginRight: '-25%'
   });
   imageOverlay.onclick = hideOverlay;
 
@@ -140,7 +142,8 @@
     minWidth: '250px',
     left: '50%',
     transform: 'translateX(-50%)',
-    marginTop: '25px'
+    marginTop: '25px',
+    maxWidth: '120%'
   });
 
   const image = document.createElement('img');
