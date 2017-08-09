@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.1
+// @version     1.2
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -45,7 +45,7 @@
   };
 
   const changeImage = function (src) {
-    image.style.filter = 'brightness(75%)';
+    imageLoading();
     const pngSrc = src.replace('.jpg', '.png');
     const gifSrc = src.replace('.jpg', '.gif');
     // Hacky way to deal with other image types, but much faster than fetch + scraping its url
@@ -102,6 +102,14 @@
   const showOverlay = () => {
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
+  };
+  const imageLoaded = () => {
+    divLoading.style.display = 'none';
+    image.style.filter = null;
+  };
+  const imageLoading = () => {
+    divLoading.style.display = 'initial';
+    image.style.filter = 'brightness(75%)';
   };
   const showIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'initial';
   const hideIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'none';
@@ -164,7 +172,7 @@
     display: 'block',
     borderRadius: '5px'
   });
-  image.onload = () => image.style.filter = null;
+  image.onload = imageLoaded;
 
   // Navigation overlay buttons
   const navStyle = {
@@ -217,6 +225,23 @@
     right: '0'
   });
 
+  // Loading indicator
+  const divLoading = document.createElement('div');
+  Object.assign(divLoading.style, {
+    position: 'fixed',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    color: 'white',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    width: '100px',
+    padding: '5px',
+    borderRadius: '2px'
+  });
+  divLoading.textContent = 'Loading...';
+
 
   /* Main */
   console.log('Running Dynasty-Gallery userscript.');
@@ -244,4 +269,5 @@
     .appendChild(image);
   imageContainer.appendChild(navNext).appendChild(arrowNext);
   imageContainer.appendChild(navPrev).appendChild(arrowPrev);
+  imageOverlay.appendChild(divLoading);
 })();
