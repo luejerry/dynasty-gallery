@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.01
+// @version     1.1
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -10,7 +10,6 @@
 (function () {
 
   'use strict';
-
 
   /* Definitions */
 
@@ -47,8 +46,8 @@
 
   const changeImage = function (src) {
     image.style.filter = 'brightness(75%)';
-      const pngSrc = src.replace('.jpg', '.png');
-      const gifSrc = src.replace('.jpg', '.gif');
+    const pngSrc = src.replace('.jpg', '.png');
+    const gifSrc = src.replace('.jpg', '.gif');
     // Hacky way to deal with other image types, but much faster than fetch + scraping its url
     httpGet(src)
       .then(() => image.src = src)
@@ -56,14 +55,12 @@
       .catch(() => image.src = gifSrc);
   };
 
-  const jumpToImage = function (a) {
-    const imageSrc = a.getElementsByTagName('img')[0].src;
-    const origSrc = imageSrc.replace('/medium/', '/original/').replace('/thumb/', '/original/');
-    currentImage = imageLinks.findIndex(src => src === origSrc);
-    changeImage(origSrc);
+  const jumpToImage = function (index) {
+    currentImage = index;
+    changeImage(imageLinks[index]);
   };
 
-  const createViewerIcon = function (a) {
+  const createViewerIcon = function (index) {
     const iconFrame = document.createElement('div');
     Object.assign(iconFrame.style, {
       position: 'absolute',
@@ -81,7 +78,7 @@
     iconFrame.appendChild(icon);
     iconFrame.onclick = event => {
       showOverlay();
-      jumpToImage(a);
+      jumpToImage(index);
       event.stopPropagation();
       event.preventDefault();
     };
@@ -106,6 +103,10 @@
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
   };
+  const showIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'initial';
+  const hideIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'none';
+  const showNavPartial = (nav) => () => nav.style.opacity = '1';
+  const hideNavPartial = (nav) => () => nav.style.opacity = '0';
 
 
   /* Bind ESC key to close overlay */
@@ -166,33 +167,33 @@
   image.onload = () => image.style.filter = null;
 
   // Navigation overlay buttons
-  const nextPrevStyle = {
+  const navStyle = {
     position: 'absolute',
     top: '0',
     bottom: '0',
     opacity: '0',
     cursor: 'pointer'
   };
-  const next = document.createElement('div');
-  Object.assign(next.style, nextPrevStyle);
-  Object.assign(next.style, {
+  const navNext = document.createElement('div');
+  Object.assign(navNext.style, navStyle);
+  Object.assign(navNext.style, {
     left: '50%',
     right: '0',
     textAlign: 'right'
   });
-  next.onclick = nextClicked;
-  next.onmouseenter = () => next.style.opacity = '1';
-  next.onmouseleave = () => next.style.opacity = '0';
-  const prev = document.createElement('div');
-  Object.assign(prev.style, nextPrevStyle);
-  Object.assign(prev.style, {
+  navNext.onclick = nextClicked;
+  navNext.onmouseenter = showNavPartial(navNext);
+  navNext.onmouseleave = hideNavPartial(navNext);
+  const navPrev = document.createElement('div');
+  Object.assign(navPrev.style, navStyle);
+  Object.assign(navPrev.style, {
     left: '0',
     right: '50%',
     textAlign: 'left'
   });
-  prev.onclick = prevClicked;
-  prev.onmouseenter = () => prev.style.opacity = '1';
-  prev.onmouseleave = () => prev.style.opacity = '0';
+  navPrev.onclick = prevClicked;
+  navPrev.onmouseenter = showNavPartial(navPrev);
+  navPrev.onmouseleave = hideNavPartial(navPrev);
 
   // Navigation arrows
   const arrowStyle = {
@@ -203,16 +204,16 @@
     fontSize: '50px',
     WebkitTextStroke: '1.5px white'
   };
-  const prevArrow = document.createElement('div');
-  prevArrow.textContent = '❮';
-  Object.assign(prevArrow.style, arrowStyle);
-  Object.assign(prevArrow.style, {
+  const arrowPrev = document.createElement('div');
+  arrowPrev.textContent = '❮';
+  Object.assign(arrowPrev.style, arrowStyle);
+  Object.assign(arrowPrev.style, {
     left: '0'
   });
-  const nextArrow = document.createElement('div');
-  nextArrow.textContent = '❯';
-  Object.assign(nextArrow.style, arrowStyle);
-  Object.assign(nextArrow.style, {
+  const arrowNext = document.createElement('div');
+  arrowNext.textContent = '❯';
+  Object.assign(arrowNext.style, arrowStyle);
+  Object.assign(arrowNext.style, {
     right: '0'
   });
 
@@ -221,26 +222,26 @@
   console.log('Running Dynasty-Gallery userscript.');
   const thumbnailLinks = Array.from(document.getElementsByClassName('thumbnail'))
     .filter(e => e.tagName === 'A')
-    .filter(a => a.href.indexOf('/images/') == 25);
+    .filter(a => a.href.indexOf('/images/') == 25)
+    .filter(a => a.getElementsByTagName('img').length > 0);
   console.log(`Dynasty-Gallery: found ${thumbnailLinks.length} gallery links.`);
-  thumbnailLinks.forEach(a => {
-    const viewerIcon = createViewerIcon(a);
+  thumbnailLinks.forEach((a, index) => {
+    const viewerIcon = createViewerIcon(index);
     a.appendChild(viewerIcon);
-    a.onmouseenter = () => viewerIcon.style.display = 'initial';
-    a.onmouseleave = () => viewerIcon.style.display = 'none';
+    a.onmouseenter = showIconPartial(viewerIcon);
+    a.onmouseleave = hideIconPartial(viewerIcon);
   });
   // Hacky way to get the full size links, but much faster than scraping every image page
   const imageLinks = thumbnailLinks
     .map(a => a.getElementsByTagName('img')[0])
-    .filter(img => img !== undefined)
     .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
-  
+
   // Put everything into the DOM
   hideOverlay();
   document.body.appendChild(backgroundOverlay);
   document.body.appendChild(imageOverlay)
     .appendChild(imageContainer)
     .appendChild(image);
-  imageContainer.appendChild(next).appendChild(nextArrow);
-  imageContainer.appendChild(prev).appendChild(prevArrow);
+  imageContainer.appendChild(navNext).appendChild(arrowNext);
+  imageContainer.appendChild(navPrev).appendChild(arrowPrev);
 })();
