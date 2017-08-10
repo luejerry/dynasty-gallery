@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.2
+// @version     1.3
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -98,10 +98,12 @@
   const hideOverlay = () => {
     imageOverlay.style.display = 'none';
     backgroundOverlay.style.display = 'none';
+    document.body.style.overflowY = 'initial';
   };
   const showOverlay = () => {
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
+    document.body.style.overflowY = 'hidden';
   };
   const imageLoaded = () => {
     divLoading.style.display = 'none';
@@ -143,13 +145,14 @@
   // Frame anchoring the lightbox
   const imageOverlay = document.createElement('div');
   Object.assign(imageOverlay.style, {
-    position: 'absolute',
+    position: 'fixed',
     top: '0',
     right: '0',
     bottom: '0',
     left: '0',
     marginLeft: '-25%',
-    marginRight: '-25%'
+    marginRight: '-25%',
+    overflowY: 'auto'
   });
   imageOverlay.onclick = hideOverlay;
 
@@ -162,7 +165,6 @@
     maxWidth: '120%',
     left: '50%',
     transform: 'translateX(-50%)',
-    marginTop: '25px',
   });
 
   // Full size image
@@ -170,47 +172,21 @@
   Object.assign(image.style, {
     margin: 'auto',
     display: 'block',
-    borderRadius: '5px'
+    borderRadius: '5px',
+    marginTop: '25px',
+    marginBottom: '25px'
   });
   image.onload = imageLoaded;
 
-  // Navigation overlay buttons
-  const navStyle = {
-    position: 'absolute',
-    top: '0',
-    bottom: '0',
-    opacity: '0',
-    cursor: 'pointer'
-  };
-  const navNext = document.createElement('div');
-  Object.assign(navNext.style, navStyle);
-  Object.assign(navNext.style, {
-    left: '50%',
-    right: '0',
-    textAlign: 'right'
-  });
-  navNext.onclick = nextClicked;
-  navNext.onmouseenter = showNavPartial(navNext);
-  navNext.onmouseleave = hideNavPartial(navNext);
-  const navPrev = document.createElement('div');
-  Object.assign(navPrev.style, navStyle);
-  Object.assign(navPrev.style, {
-    left: '0',
-    right: '50%',
-    textAlign: 'left'
-  });
-  navPrev.onclick = prevClicked;
-  navPrev.onmouseenter = showNavPartial(navPrev);
-  navPrev.onmouseleave = hideNavPartial(navPrev);
-
   // Navigation arrows
   const arrowStyle = {
-    position: 'absolute',
+    position: 'fixed',
     top: '50%',
     marginTop: '-25px',
     color: '#888888',
     fontSize: '50px',
-    WebkitTextStroke: '1.5px white'
+    WebkitTextStroke: '1.5px white',
+    opacity: '0'
   };
   const arrowPrev = document.createElement('div');
   arrowPrev.textContent = '❮';
@@ -224,6 +200,34 @@
   Object.assign(arrowNext.style, {
     right: '0'
   });
+
+  // Navigation overlay buttons
+  const navStyle = {
+    position: 'absolute',
+    top: '0',
+    bottom: '0',
+    cursor: 'pointer'
+  };
+  const navNext = document.createElement('div');
+  Object.assign(navNext.style, navStyle);
+  Object.assign(navNext.style, {
+    left: '50%',
+    right: '0',
+    textAlign: 'right'
+  });
+  navNext.onclick = nextClicked;
+  navNext.onmouseenter = showNavPartial(arrowNext);
+  navNext.onmouseleave = hideNavPartial(arrowNext);
+  const navPrev = document.createElement('div');
+  Object.assign(navPrev.style, navStyle);
+  Object.assign(navPrev.style, {
+    left: '0',
+    right: '50%',
+    textAlign: 'left'
+  });
+  navPrev.onclick = prevClicked;
+  navPrev.onmouseenter = showNavPartial(arrowPrev);
+  navPrev.onmouseleave = hideNavPartial(arrowPrev);
 
   // Loading indicator
   const divLoading = document.createElement('div');
@@ -267,7 +271,9 @@
   document.body.appendChild(imageOverlay)
     .appendChild(imageContainer)
     .appendChild(image);
-  imageContainer.appendChild(navNext).appendChild(arrowNext);
-  imageContainer.appendChild(navPrev).appendChild(arrowPrev);
+  imageContainer.appendChild(navNext);
+  imageContainer.appendChild(navPrev);
   imageOverlay.appendChild(divLoading);
+  imageOverlay.appendChild(arrowNext);
+  imageOverlay.appendChild(arrowPrev);
 })();
