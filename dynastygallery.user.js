@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.4
+// @version     1.4.1
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -57,7 +57,13 @@
   };
 
   const updateTags = function () {
-    tagOverlay.innerHTML = imageTags[currentImage];
+    const tagsHtml = imageTags[currentImage];
+    if (tagsHtml === undefined) {
+      disableTagOverlay();
+    } else {
+      tagOverlay.innerHTML = imageTags[currentImage];
+      enableTagOverlay();
+    }
   };
 
   const jumpToImage = function (index) {
@@ -71,12 +77,13 @@
       position: 'absolute',
       marginTop: '-24px',
       backgroundColor: '#ffffff',
-      display: 'none',
+      opacity: '0',
       padding: '3px',
       width: '20px',
       height: '20px',
       borderRadius: '0 2px 0 2px',
-      textAlign: 'center'
+      textAlign: 'center',
+      transition: 'opacity 0.2s'
     });
     const icon = document.createElement('i');
     icon.classList.add('icon-resize-full');
@@ -153,8 +160,10 @@
   };
   const showTagOverlay = () => tagOverlay.style.opacity = '1';
   const hideTagOverlay = () => tagOverlay.style.opacity = '0';
-  const showIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'initial';
-  const hideIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'none';
+  const enableTagOverlay = () => tagOverlay.style.display = 'initial';
+  const disableTagOverlay = () => tagOverlay.style.display = 'none';
+  const showIconPartial = (viewerIcon) => () => viewerIcon.style.opacity = '1';
+  const hideIconPartial = (viewerIcon) => () => viewerIcon.style.opacity = '0';
   const showNavPartial = (nav) => () => {
     nav.style.opacity = '1';
     showTagOverlay();
@@ -238,7 +247,7 @@
     paddingBottom: '6px',
     paddingLeft: '7px',
     paddingRight: '7px',
-    transition: 'opacity 0.2s'
+    transition: 'opacity 0.2s',
   });
   tagOverlay.onmouseenter = showTagOverlay;
   tagOverlay.onmouseleave = hideTagOverlay;
@@ -333,7 +342,6 @@
     .map(a => a.getElementsByTagName('img')[0])
     .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
   const imageTags = thumbnailLinks.map(a => a.dataset.content);
-  console.log(tagOverlay);
 
   // Put everything into the DOM
   hideOverlay();
