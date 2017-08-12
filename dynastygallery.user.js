@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.4.2
+// @version     1.4.3
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -162,6 +162,7 @@
     divLoading.style.display = 'none';
     image.style.filter = null;
     updateTags();
+    imageOverlay.scrollTop = 0;
   };
   const imageLoading = () => {
     divLoading.style.display = 'initial';
