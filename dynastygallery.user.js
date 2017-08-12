@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.3
+// @version     1.3.1
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -85,6 +85,39 @@
     return iconFrame;
   };
 
+  // Prevents background scrolling behind modal
+  const wrapContentDiv = function () {
+    const contentDiv = document.getElementById('content');
+    const placeholder = contentDiv.nextSibling;
+    const fragment = document.createDocumentFragment();
+    contentDiv.remove();
+    const contentContainer = document.createElement('div');
+    Object.assign(contentContainer.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      width: '100%',
+      height: '100%',
+      overflow: 'auto'
+    });
+    fragment.appendChild(contentContainer).appendChild(contentDiv);
+    document.body.insertBefore(fragment, placeholder);
+  }
+
+  const createViewerElements = function () {
+    const bodyFragment = document.createDocumentFragment();
+    bodyFragment.appendChild(backgroundOverlay);
+    bodyFragment.appendChild(imageOverlay)
+      .appendChild(imageContainer)
+      .appendChild(image);
+    imageContainer.appendChild(navNext);
+    imageContainer.appendChild(navPrev);
+    imageOverlay.appendChild(divLoading);
+    imageOverlay.appendChild(arrowNext);
+    imageOverlay.appendChild(arrowPrev);
+    return bodyFragment;
+  }
+
 
   /* Event handlers */
   const prevClicked = event => {
@@ -98,12 +131,10 @@
   const hideOverlay = () => {
     imageOverlay.style.display = 'none';
     backgroundOverlay.style.display = 'none';
-    document.body.style.overflowY = 'initial';
   };
   const showOverlay = () => {
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
-    document.body.style.overflowY = 'hidden';
   };
   const imageLoaded = () => {
     divLoading.style.display = 'none';
@@ -254,6 +285,9 @@
     .filter(a => a.href.indexOf('/images/') == 25)
     .filter(a => a.getElementsByTagName('img').length > 0);
   console.log(`Dynasty-Gallery: found ${thumbnailLinks.length} gallery links.`);
+  if (thumbnailLinks.length == 0) {
+    return;
+  }
   thumbnailLinks.forEach((a, index) => {
     const viewerIcon = createViewerIcon(index);
     a.appendChild(viewerIcon);
@@ -267,13 +301,6 @@
 
   // Put everything into the DOM
   hideOverlay();
-  document.body.appendChild(backgroundOverlay);
-  document.body.appendChild(imageOverlay)
-    .appendChild(imageContainer)
-    .appendChild(image);
-  imageContainer.appendChild(navNext);
-  imageContainer.appendChild(navPrev);
-  imageOverlay.appendChild(divLoading);
-  imageOverlay.appendChild(arrowNext);
-  imageOverlay.appendChild(arrowPrev);
+  wrapContentDiv();
+  document.body.appendChild(createViewerElements());
 })();
