@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.3.1
+// @version     1.4
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -34,18 +34,19 @@
     if (imageLinks[currentImage + 1] !== undefined) {
       currentImage++;
     }
-    return imageLinks[currentImage];
+    updateImage();
   };
 
   const prevImage = function () {
     if (imageLinks[currentImage - 1] !== undefined) {
       currentImage--;
     }
-    return imageLinks[currentImage];
+    updateImage();
   };
 
-  const changeImage = function (src) {
+  const updateImage = function () {
     imageLoading();
+    const src = imageLinks[currentImage];
     const pngSrc = src.replace('.jpg', '.png');
     const gifSrc = src.replace('.jpg', '.gif');
     // Hacky way to deal with other image types, but much faster than fetch + scraping its url
@@ -55,9 +56,13 @@
       .catch(() => image.src = gifSrc);
   };
 
+  const updateTags = function () {
+    tagOverlay.innerHTML = imageTags[currentImage];
+  };
+
   const jumpToImage = function (index) {
     currentImage = index;
-    changeImage(imageLinks[index]);
+    updateImage();
   };
 
   const createViewerIcon = function (index) {
@@ -70,7 +75,7 @@
       padding: '3px',
       width: '20px',
       height: '20px',
-      borderRadius: '2px',
+      borderRadius: '0 2px 0 2px',
       textAlign: 'center'
     });
     const icon = document.createElement('i');
@@ -112,6 +117,7 @@
       .appendChild(image);
     imageContainer.appendChild(navNext);
     imageContainer.appendChild(navPrev);
+    imageContainer.appendChild(tagOverlay);
     imageOverlay.appendChild(divLoading);
     imageOverlay.appendChild(arrowNext);
     imageOverlay.appendChild(arrowPrev);
@@ -121,11 +127,11 @@
 
   /* Event handlers */
   const prevClicked = event => {
-    changeImage(prevImage());
+    prevImage();
     event.stopPropagation();
   };
   const nextClicked = event => {
-    changeImage(nextImage());
+    nextImage();
     event.stopPropagation();
   };
   const hideOverlay = () => {
@@ -139,15 +145,24 @@
   const imageLoaded = () => {
     divLoading.style.display = 'none';
     image.style.filter = null;
+    updateTags();
   };
   const imageLoading = () => {
     divLoading.style.display = 'initial';
     image.style.filter = 'brightness(75%)';
   };
+  const showTagOverlay = () => tagOverlay.style.opacity = '1';
+  const hideTagOverlay = () => tagOverlay.style.opacity = '0';
   const showIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'initial';
   const hideIconPartial = (viewerIcon) => () => viewerIcon.style.display = 'none';
-  const showNavPartial = (nav) => () => nav.style.opacity = '1';
-  const hideNavPartial = (nav) => () => nav.style.opacity = '0';
+  const showNavPartial = (nav) => () => {
+    nav.style.opacity = '1';
+    showTagOverlay();
+  };
+  const hideNavPartial = (nav) => () => {
+    nav.style.opacity = '0';
+    hideTagOverlay();
+  };
 
 
   /* Bind ESC key to close overlay */
@@ -208,6 +223,25 @@
     marginBottom: '25px'
   });
   image.onload = imageLoaded;
+
+  // Tag overlay
+  const tagOverlay = document.createElement('div');
+  Object.assign(tagOverlay.style, {
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    right: '0',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: '5px 5px 0 0',
+    marginTop: '25px',
+    paddingTop: '5px',
+    paddingBottom: '6px',
+    paddingLeft: '7px',
+    paddingRight: '7px',
+    transition: 'opacity 0.2s'
+  });
+  tagOverlay.onmouseenter = showTagOverlay;
+  tagOverlay.onmouseleave = hideTagOverlay;
 
   // Navigation arrows
   const arrowStyle = {
@@ -298,6 +332,8 @@
   const imageLinks = thumbnailLinks
     .map(a => a.getElementsByTagName('img')[0])
     .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
+  const imageTags = thumbnailLinks.map(a => a.dataset.content);
+  console.log(tagOverlay);
 
   // Put everything into the DOM
   hideOverlay();
