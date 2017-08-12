@@ -13,8 +13,10 @@
 
   /* Definitions */
 
+  // Our global mutable state
   let currentImage = 0;
 
+  // Promisify XMLHttpRequest
   const httpGet = function (url) {
     return new Promise((resolve, reject) => {
       const xhttp = new XMLHttpRequest();
@@ -30,6 +32,7 @@
     });
   };
 
+  // Moves to and displays next image
   const nextImage = function () {
     if (imageLinks[currentImage + 1] !== undefined) {
       currentImage++;
@@ -37,13 +40,21 @@
     updateImage();
   };
 
+  // Moves to and displays previous image
   const prevImage = function () {
     if (imageLinks[currentImage - 1] !== undefined) {
       currentImage--;
     }
     updateImage();
   };
+  
+  // Moves to and displays image at the given index
+  const jumpToImage = function (index) {
+    currentImage = index;
+    updateImage();
+  };
 
+  // Fetches and displays the current image
   const updateImage = function () {
     imageLoading();
     const src = imageLinks[currentImage];
@@ -55,7 +66,8 @@
       .catch(() => httpGet(pngSrc).then(() => image.src = pngSrc))
       .catch(() => image.src = gifSrc);
   };
-
+  
+  // Populates tags for the current image
   const updateTags = function () {
     const tagsHtml = imageTags[currentImage];
     if (tagsHtml === undefined) {
@@ -66,11 +78,7 @@
     }
   };
 
-  const jumpToImage = function (index) {
-    currentImage = index;
-    updateImage();
-  };
-
+  // Attaches expand button to thumbnail at index
   const createViewerIcon = function (index) {
     const iconFrame = document.createElement('div');
     Object.assign(iconFrame.style, {
@@ -97,7 +105,7 @@
     return iconFrame;
   };
 
-  // Prevents background scrolling behind modal
+  // Wraps page content in a div to prevent background scrolling behind modal
   const wrapContentDiv = function () {
     const contentDiv = document.getElementById('content');
     const placeholder = contentDiv.nextSibling;
@@ -116,6 +124,7 @@
     document.body.insertBefore(fragment, placeholder);
   }
 
+  // Constructs and returns the DOM tree for all viewer elements
   const createViewerElements = function () {
     const bodyFragment = document.createDocumentFragment();
     bodyFragment.appendChild(backgroundOverlay);
@@ -183,9 +192,9 @@
   };
 
 
-  /* Creating DOM elements */
+  /* Create DOM elements */
 
-  // Darken the background page
+  // Overlay to darken background page
   const backgroundOverlay = document.createElement('div');
   Object.assign(backgroundOverlay.style, {
     position: 'fixed',
@@ -197,7 +206,7 @@
   });
   backgroundOverlay.onclick = hideOverlay;
 
-  // Frame anchoring the lightbox
+  // Frame to anchor the lightbox
   const imageOverlay = document.createElement('div');
   Object.assign(imageOverlay.style, {
     position: 'fixed',
@@ -256,9 +265,12 @@
   const arrowStyle = {
     position: 'fixed',
     top: '50%',
-    marginTop: '-25px',
-    color: '#888888',
-    fontSize: '50px',
+    marginTop: '-16px',
+    marginLeft: '8px',
+    marginRight: '8px',
+    color: '#000000',
+    fontSize: '36px',
+    fontWeight: 'bold',
     WebkitTextStroke: '1.5px white',
     opacity: '0'
   };
@@ -322,6 +334,7 @@
 
 
   /* Main */
+
   console.log('Running Dynasty-Gallery userscript.');
   const thumbnailLinks = Array.from(document.getElementsByClassName('thumbnail'))
     .filter(e => e.tagName === 'A')
