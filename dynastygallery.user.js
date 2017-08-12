@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.4.1
+// @version     1.4.2
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -91,7 +91,8 @@
       height: '20px',
       borderRadius: '0 2px 0 2px',
       textAlign: 'center',
-      transition: 'opacity 0.2s'
+      transition: 'opacity 0.2s',
+      display: 'none'
     });
     const icon = document.createElement('i');
     icon.classList.add('icon-resize-full');
@@ -109,7 +110,6 @@
   const wrapContentDiv = function () {
     const contentDiv = document.getElementById('content');
     const placeholder = contentDiv.nextSibling;
-    const fragment = document.createDocumentFragment();
     contentDiv.remove();
     const contentContainer = document.createElement('div');
     Object.assign(contentContainer.style, {
@@ -120,8 +120,8 @@
       height: '100%',
       overflow: 'auto'
     });
-    fragment.appendChild(contentContainer).appendChild(contentDiv);
-    document.body.insertBefore(fragment, placeholder);
+    contentContainer.appendChild(contentDiv);
+    document.body.insertBefore(contentContainer, placeholder);
   }
 
   // Constructs and returns the DOM tree for all viewer elements
@@ -171,7 +171,10 @@
   const hideTagOverlay = () => tagOverlay.style.opacity = '0';
   const enableTagOverlay = () => tagOverlay.style.display = 'initial';
   const disableTagOverlay = () => tagOverlay.style.display = 'none';
-  const showIconPartial = (viewerIcon) => () => viewerIcon.style.opacity = '1';
+  const showIconPartial = (viewerIcon) => () => {
+    viewerIcon.style.display = 'initial';
+    viewerIcon.style.opacity = '1';
+  };
   const hideIconPartial = (viewerIcon) => () => viewerIcon.style.opacity = '0';
   const showNavPartial = (nav) => () => {
     nav.style.opacity = '1';
@@ -346,9 +349,9 @@
   }
   thumbnailLinks.forEach((a, index) => {
     const viewerIcon = createViewerIcon(index);
-    a.appendChild(viewerIcon);
     a.onmouseenter = showIconPartial(viewerIcon);
     a.onmouseleave = hideIconPartial(viewerIcon);
+    a.appendChild(viewerIcon);
   });
   // Hacky way to get the full size links, but much faster than scraping every image page
   const imageLinks = thumbnailLinks
