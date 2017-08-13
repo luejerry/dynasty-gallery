@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.4.3
+// @version     1.4.4
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -73,9 +73,32 @@
     if (tagsHtml === undefined) {
       disableTagOverlay();
     } else {
+      disableTagOverlay();
       tagOverlay.innerHTML = imageTags[currentImage];
+      const tagElements = Array.from(tagOverlay.getElementsByClassName('label'));
+      tagElements.forEach(label => {
+        const tagLink = document.createElement('a');
+        tagLink.href = tagToHref(label.textContent);
+        tagLink.appendChild(label);
+        tagOverlay.appendChild(tagLink);
+        const spacer = document.createElement('text');
+        spacer.textContent = ' ';
+        tagOverlay.appendChild(spacer);
+      });
       enableTagOverlay();
     }
+  };
+
+  // Generates tag url from its text
+  const tagToHref = function (tagText) {
+    const matches = tagText.match(/^(?:(Author|Doujin|Series|Pairing|Scanlator): )?(.*)$/);
+    const section = (matches[1] || 'tag').toLowerCase();
+    const sectionName = section !== 'series' ? section + 's' : section;
+    const tagName = matches[2]
+      .match(/(\w+)/g)
+      .join('_')
+      .toLowerCase();
+    return `/${sectionName}/${tagName}/images`;
   };
 
   // Attaches expand button to thumbnail at index
@@ -122,7 +145,7 @@
     });
     contentContainer.appendChild(contentDiv);
     document.body.insertBefore(contentContainer, placeholder);
-  }
+  };
 
   // Constructs and returns the DOM tree for all viewer elements
   const createViewerElements = function () {
@@ -138,7 +161,7 @@
     imageOverlay.appendChild(arrowNext);
     imageOverlay.appendChild(arrowPrev);
     return bodyFragment;
-  }
+  };
 
 
   /* Event handlers */
