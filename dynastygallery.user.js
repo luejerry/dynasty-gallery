@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.4.4
+// @version     1.4.5
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -21,7 +21,7 @@
     return new Promise((resolve, reject) => {
       const xhttp = new XMLHttpRequest();
       xhttp.onload = () => {
-        if (xhttp.status == 200) {
+        if (xhttp.status === 200) {
           resolve(xhttp.responseXML);
         } else {
           reject(Error(xhttp.statusText));
@@ -47,7 +47,7 @@
     }
     updateImage();
   };
-  
+
   // Moves to and displays image at the given index
   const jumpToImage = function (index) {
     currentImage = index;
@@ -66,7 +66,7 @@
       .catch(() => httpGet(pngSrc).then(() => image.src = pngSrc))
       .catch(() => image.src = gifSrc);
   };
-  
+
   // Populates tags for the current image
   const updateTags = function () {
     const tagsHtml = imageTags[currentImage];
@@ -94,10 +94,8 @@
     const matches = tagText.match(/^(?:(Author|Doujin|Series|Pairing|Scanlator): )?(.*)$/);
     const section = (matches[1] || 'tag').toLowerCase();
     const sectionName = section !== 'series' ? section + 's' : section;
-    const tagName = matches[2]
-      .match(/(\w+)/g)
-      .join('_')
-      .toLowerCase();
+    const tagWords = matches[2].match(/(\w+)/g);
+    const tagName = tagWords === null ? 'blank' : tagWords.join('_').toLowerCase();
     return `/${sectionName}/${tagName}/images`;
   };
 
@@ -213,7 +211,7 @@
   /* Bind ESC key to close overlay */
   document.onkeydown = event => {
     event = event || window.event;
-    if (event.keyCode == 27) {
+    if (event.keyCode === 27) {
       hideOverlay();
     }
   };
@@ -365,10 +363,10 @@
   console.log('Running Dynasty-Gallery userscript.');
   const thumbnailLinks = Array.from(document.getElementsByClassName('thumbnail'))
     .filter(e => e.tagName === 'A')
-    .filter(a => a.href.indexOf('/images/') == 25)
+    .filter(a => a.href.indexOf('/images/') === 25)
     .filter(a => a.getElementsByTagName('img').length > 0);
   console.log(`Dynasty-Gallery: found ${thumbnailLinks.length} gallery links.`);
-  if (thumbnailLinks.length == 0) {
+  if (thumbnailLinks.length === 0) {
     return;
   }
   thumbnailLinks.forEach((a, index) => {
