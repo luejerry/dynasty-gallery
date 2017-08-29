@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.4.5
+// @version     1.5
 // @grant       none
 // @author      cyricc
 // ==/UserScript==
@@ -38,6 +38,7 @@
       currentImage++;
     }
     updateImage();
+    prefetchImages();
   };
 
   // Moves to and displays previous image
@@ -46,25 +47,48 @@
       currentImage--;
     }
     updateImage();
+    prefetchImages();
   };
 
   // Moves to and displays image at the given index
   const jumpToImage = function (index) {
     currentImage = index;
     updateImage();
+    prefetchImages();
   };
 
   // Fetches and displays the current image
   const updateImage = function () {
     imageLoading();
-    const src = imageLinks[currentImage];
+    loadImage(image, currentImage);
+  };
+
+  // Prefetch the prev/next images to cache
+  const prefetchImages = function () {
+    if (imageLinks[currentImage + 1] !== undefined) {
+      loadImage(imagePrefetchNext, currentImage + 1);
+    }
+    if (imageLinks[currentImage - 1] !== undefined) {
+      loadImage(imagePrefetchPrev, currentImage - 1);
+    }
+  };
+
+  // Load an image in the image src list
+  const loadImage = function (img, index) {
+    const src = imageLinks[index];
     const pngSrc = src.replace('.jpg', '.png');
     const gifSrc = src.replace('.jpg', '.gif');
     // Hacky way to deal with other image types, but much faster than fetch + scraping its url
     httpGet(src)
-      .then(() => image.src = src)
-      .catch(() => httpGet(pngSrc).then(() => image.src = pngSrc))
-      .catch(() => image.src = gifSrc);
+      .then(() => img.src = src)
+      .catch(() => httpGet(pngSrc).then(() => {
+        img.src = pngSrc;
+        imageLinks[index] = pngSrc;
+      }))
+      .catch(() => {
+        img.src = gifSrc;
+        imageLinks[index] = gifSrc;
+      });
   };
 
   // Populates tags for the current image
@@ -266,6 +290,10 @@
     marginBottom: '25px'
   });
   image.onload = imageLoaded;
+
+  // Prefetched images
+  const imagePrefetchNext = document.createElement('img');
+  const imagePrefetchPrev = document.createElement('img');
 
   // Tag overlay
   const tagOverlay = document.createElement('div');
