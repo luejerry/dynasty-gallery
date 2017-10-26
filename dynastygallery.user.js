@@ -153,22 +153,34 @@
     return iconFrame;
   };
 
+  const addViewerIcons = function () {
+    const mouseoutEvent = new MouseEvent('mouseout', {});
+    const mouseleaveEvent = new MouseEvent('mouseleave', {});
+    thumbnailLinks.forEach((a, index) => {
+      const viewerIcon = createViewerIcon(index);
+      a.onmouseenter = showIconPartial(viewerIcon);
+      a.onmouseleave = hideIconPartial(viewerIcon);
+      viewerIcon.addEventListener('click', () => {
+        a.dispatchEvent(mouseoutEvent);
+        a.dispatchEvent(mouseleaveEvent);
+      });
+      a.appendChild(viewerIcon);
+    });
+  };
+
   // Wraps page content in a div to prevent background scrolling behind modal
   const wrapContentDiv = function () {
-    const contentDiv = document.getElementById('content');
-    const placeholder = contentDiv.nextSibling;
-    contentDiv.remove();
-    const contentContainer = document.createElement('div');
-    Object.assign(contentContainer.style, {
-      position: 'fixed',
-      top: '0',
-      left: '0',
-      width: '100%',
-      height: '100%',
-      overflow: 'auto'
-    });
+    const scrollPosition = document.documentElement.scrollTop;
     contentContainer.appendChild(contentDiv);
-    document.body.insertBefore(contentContainer, placeholder);
+    contentContainer.style.display = 'initial';
+    contentContainer.scrollTop = scrollPosition;
+  };
+
+  const unwrapContentDiv = function () {
+    const scrollPosition = contentContainer.scrollTop;
+    contentContainer.style.display = 'none';
+    document.body.insertBefore(contentDiv, contentContainer);
+    document.documentElement.scrollTop = scrollPosition;
   };
 
   // Constructs and returns the DOM tree for all viewer elements
@@ -198,10 +210,12 @@
     event.stopPropagation();
   };
   const hideOverlay = () => {
+    unwrapContentDiv();
     imageOverlay.style.display = 'none';
     backgroundOverlay.style.display = 'none';
   };
   const showOverlay = () => {
+    wrapContentDiv();
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
   };
@@ -245,8 +259,22 @@
 
   /* Create DOM elements */
 
+  // Page content scroll wrapper, to prevent background scrolling behind modal
+  const contentContainer = document.createElement('div');
+  contentContainer.id = 'gallery-contentContainer';
+  Object.assign(contentContainer.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    overflow: 'auto',
+    display: 'none'
+  });
+
   // Overlay to darken background page
   const backgroundOverlay = document.createElement('div');
+  backgroundOverlay.id = 'gallery-backgroundOverlay';
   Object.assign(backgroundOverlay.style, {
     position: 'fixed',
     top: '0',
@@ -259,6 +287,7 @@
 
   // Frame to anchor the lightbox
   const imageOverlay = document.createElement('div');
+  imageOverlay.id = 'gallery-imageOverlay';
   Object.assign(imageOverlay.style, {
     position: 'fixed',
     top: '0',
@@ -273,6 +302,7 @@
 
   // Lightbox
   const imageContainer = document.createElement('div');
+  imageContainer.id = 'gallery-imageContainer';
   Object.assign(imageContainer.style, {
     position: 'absolute',
     minHeight: '250px',
@@ -399,20 +429,20 @@
   if (thumbnailLinks.length === 0) {
     return;
   }
-  thumbnailLinks.forEach((a, index) => {
-    const viewerIcon = createViewerIcon(index);
-    a.onmouseenter = showIconPartial(viewerIcon);
-    a.onmouseleave = hideIconPartial(viewerIcon);
-    a.appendChild(viewerIcon);
-  });
   // Hacky way to get the full size links, but much faster than scraping every image page
   const imageLinks = thumbnailLinks
     .map(a => a.getElementsByTagName('img')[0])
     .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
   const imageTags = thumbnailLinks.map(a => a.dataset.content);
 
+  // Adjust site element margins, this is for preventing background scrolling
+  const contentDiv = document.getElementById('content');
+  contentDiv.style.marginBottom = '20px';
+  document.body.style.marginBottom = '0px';
+
   // Put everything into the DOM
+  addViewerIcons();
+  document.body.insertBefore(contentContainer, contentDiv.nextSibling);
   hideOverlay();
-  wrapContentDiv();
   document.body.appendChild(createViewerElements());
 })();
