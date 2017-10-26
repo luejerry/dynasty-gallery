@@ -5,6 +5,8 @@
 // @version     1.5
 // @grant       none
 // @author      cyricc
+// @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
+// @updateURL   https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
 // ==/UserScript==
 
 (function () {
