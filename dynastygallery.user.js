@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.6
+// @version     1.61
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -173,6 +173,7 @@
   const wrapContentDiv = function () {
     const scrollPosition = window.scrollY;
     contentContainer.appendChild(contentDiv);
+    contentContainer.style.willChange = 'transform';
     contentContainer.style.display = 'initial';
     contentContainer.scrollTop = scrollPosition;
   };
@@ -205,6 +206,7 @@
   };
   const hideOverlay = () => {
     imageOverlay.style.display = 'none';
+    imageOverlay.style.willChange = 'initial';
     backgroundOverlay.style.display = 'none';
   };
   const showOverlay = () => {
@@ -212,6 +214,7 @@
       firstRun = false;
       wrapContentDiv();
     }
+    imageOverlay.style.willChange = 'transform';
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
   };
