@@ -170,7 +170,7 @@
 
   // Wraps page content in a div to prevent background scrolling behind modal
   const wrapContentDiv = function () {
-    const scrollPosition = document.documentElement.scrollTop;
+    const scrollPosition = window.scrollY;
     contentContainer.appendChild(contentDiv);
     contentContainer.style.display = 'initial';
     contentContainer.scrollTop = scrollPosition;
@@ -180,7 +180,7 @@
     const scrollPosition = contentContainer.scrollTop;
     contentContainer.style.display = 'none';
     document.body.insertBefore(contentDiv, contentContainer);
-    document.documentElement.scrollTop = scrollPosition;
+    window.scroll(0, scrollPosition);
   };
 
   // Constructs and returns the DOM tree for all viewer elements
