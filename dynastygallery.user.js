@@ -17,6 +17,7 @@
 
   // Our global mutable state
   let currentImage = 0;
+  let firstRun = true;
 
   // Promisify XMLHttpRequest
   const httpGet = function (url) {
@@ -176,13 +177,6 @@
     contentContainer.scrollTop = scrollPosition;
   };
 
-  const unwrapContentDiv = function () {
-    const scrollPosition = contentContainer.scrollTop;
-    contentContainer.style.display = 'none';
-    document.body.insertBefore(contentDiv, contentContainer);
-    window.scroll(0, scrollPosition);
-  };
-
   // Constructs and returns the DOM tree for all viewer elements
   const createViewerElements = function () {
     const bodyFragment = document.createDocumentFragment();
@@ -210,12 +204,14 @@
     event.stopPropagation();
   };
   const hideOverlay = () => {
-    unwrapContentDiv();
     imageOverlay.style.display = 'none';
     backgroundOverlay.style.display = 'none';
   };
   const showOverlay = () => {
-    wrapContentDiv();
+    if (firstRun) {
+      firstRun = false;
+      wrapContentDiv();
+    }
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
   };
