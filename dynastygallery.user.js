@@ -206,7 +206,6 @@
   };
   const hideOverlay = () => {
     imageOverlay.style.display = 'none';
-    imageOverlay.style.willChange = 'initial';
     backgroundOverlay.style.display = 'none';
   };
   const showOverlay = () => {
@@ -214,7 +213,6 @@
       firstRun = false;
       wrapContentDiv();
     }
-    imageOverlay.style.willChange = 'transform';
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
   };
