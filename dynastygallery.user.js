@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.61
+// @version     1.62
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -189,8 +189,8 @@
     imageContainer.appendChild(navPrev);
     imageContainer.appendChild(tagOverlay);
     imageOverlay.appendChild(divLoading);
-    imageOverlay.appendChild(arrowNext);
-    imageOverlay.appendChild(arrowPrev);
+    bodyFragment.appendChild(arrowNext);
+    bodyFragment.appendChild(arrowPrev);
     return bodyFragment;
   };
 
@@ -236,11 +236,11 @@
   };
   const hideIconPartial = (viewerIcon) => () => viewerIcon.style.opacity = '0';
   const showNavPartial = (nav) => () => {
-    nav.style.opacity = '1';
+    nav.style.display = 'initial';
     showTagOverlay();
   };
   const hideNavPartial = (nav) => () => {
-    nav.style.opacity = '0';
+    nav.style.display = 'none';
     hideTagOverlay();
   };
 
@@ -293,7 +293,8 @@
     left: '0',
     marginLeft: '-25%',
     marginRight: '-25%',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    willChange: 'transform'
   });
   imageOverlay.onclick = hideOverlay;
 
@@ -354,15 +355,17 @@
     fontSize: '36px',
     fontWeight: 'bold',
     WebkitTextStroke: '1.5px white',
-    opacity: '0'
+    display: 'none'
   };
   const arrowPrev = document.createElement('div');
+  arrowPrev.id = 'gallery-prevIcon';
   arrowPrev.textContent = '❮';
   Object.assign(arrowPrev.style, arrowStyle);
   Object.assign(arrowPrev.style, {
     left: '0'
   });
   const arrowNext = document.createElement('div');
+  arrowNext.id = 'gallery-nextIcon';
   arrowNext.textContent = '❯';
   Object.assign(arrowNext.style, arrowStyle);
   Object.assign(arrowNext.style, {
