@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.62
+// @version     1.63
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -246,12 +246,12 @@
 
 
   /* Bind ESC key to close overlay */
-  document.onkeydown = event => {
+  document.addEventListener('keydown', event => {
     event = event || window.event;
-    if (event.keyCode === 27) {
+    if (event.key === 'Escape') {
       hideOverlay();
     }
-  };
+  });
 
 
   /* Create DOM elements */
