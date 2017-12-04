@@ -3,7 +3,8 @@
 Adds a modal lightbox image viewer to Dynasty for streamlined image browsing.
 
 ## Changelog
-* 1.62: Improved scrolling performance of viewer (Chrome).
+* 1.6.4: Added small delay before loading indicator appears.
+* 1.6.2: Improved scrolling performance of viewer (Chrome).
 * 1.6: Enabled autoupdate. Resolve issue with reduced scrolling performance even when viewer is not open (Chrome/Safari).
 * 1.5: Added image prefetching for improved responsivness.
 * 1.4.5: Fix "???" tags not being parsed correctly.
