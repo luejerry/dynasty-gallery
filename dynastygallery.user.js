@@ -188,7 +188,7 @@
     imageContainer.appendChild(navNext);
     imageContainer.appendChild(navPrev);
     imageContainer.appendChild(tagOverlay);
-    imageOverlay.appendChild(divLoading);
+    bodyFragment.appendChild(divLoading);
     bodyFragment.appendChild(arrowNext);
     bodyFragment.appendChild(arrowPrev);
     return bodyFragment;
