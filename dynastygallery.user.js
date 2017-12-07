@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.64
+// @version     1.65
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -315,6 +315,7 @@
 
   // Full size image
   const image = document.createElement('img');
+  image.id = 'gallery-image';
   Object.assign(image.style, {
     margin: 'auto',
     display: 'block',
@@ -330,6 +331,7 @@
 
   // Tag overlay
   const tagOverlay = document.createElement('div');
+  tagOverlay.id = 'gallery-tags';
   Object.assign(tagOverlay.style, {
     position: 'absolute',
     top: '0',
@@ -343,6 +345,7 @@
     paddingLeft: '7px',
     paddingRight: '7px',
     transition: 'opacity 0.2s',
+    display: 'none'
   });
   tagOverlay.onmouseenter = showTagOverlay;
   tagOverlay.onmouseleave = hideTagOverlay;
