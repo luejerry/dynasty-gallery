@@ -440,12 +440,12 @@
 
   /* Main */
 
-  console.log('Running Dynasty-Gallery userscript.');
+  // console.log('Running Dynasty-Gallery userscript.');
   const thumbnailLinks = Array.from(document.getElementsByClassName('thumbnail'))
     .filter(e => e.tagName === 'A')
     .filter(a => a.href.indexOf('/images/') === 25)
     .filter(a => a.getElementsByTagName('img').length > 0);
-  console.log(`Dynasty-Gallery: found ${thumbnailLinks.length} gallery links.`);
+  // console.log(`Dynasty-Gallery: found ${thumbnailLinks.length} gallery links.`);
   if (thumbnailLinks.length === 0) {
     return;
   }
