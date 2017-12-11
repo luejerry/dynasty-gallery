@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.65
+// @version     1.70
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -31,6 +31,7 @@
         }
       };
       xhttp.open('GET', url);
+      xhttp.responseType = 'document';
       xhttp.send();
     });
   };
@@ -63,35 +64,44 @@
   // Fetches and displays the current image
   const updateImage = function () {
     imageLoading();
-    loadImage(image, currentImage);
+    loadImageAsync(image, currentImage);
   };
 
   // Prefetch the prev/next images to cache
   const prefetchImages = function () {
     if (imageLinks[currentImage + 1] !== undefined) {
-      loadImage(imagePrefetchNext, currentImage + 1);
+      loadImageAsync(imagePrefetchNext, currentImage + 1);
     }
     if (imageLinks[currentImage - 1] !== undefined) {
-      loadImage(imagePrefetchPrev, currentImage - 1);
+      loadImageAsync(imagePrefetchPrev, currentImage - 1);
+    }
+  };
+
+  // Check if a target url exists (returns OK)
+  const isHrefValidAsync = async function (src) {
+    try {
+      await httpGet(src);
+      return true;
+    } catch (err) {
+      return false;
     }
   };
 
   // Load an image in the image src list
-  const loadImage = function (img, index) {
+  const loadImageAsync = async function (img, index) {
     const src = imageLinks[index];
-    const pngSrc = src.replace('.jpg', '.png');
-    const gifSrc = src.replace('.jpg', '.gif');
-    // Hacky way to deal with other image types, but much faster than fetch + scraping its url
-    httpGet(src)
-      .then(() => img.src = src)
-      .catch(() => httpGet(pngSrc).then(() => {
-        img.src = pngSrc;
-        imageLinks[index] = pngSrc;
-      }))
-      .catch(() => {
-        img.src = gifSrc;
-        imageLinks[index] = gifSrc;
-      });
+    const pngSrc = src.replace(/\.jpg/i, '.png');
+    const gifSrc = src.replace(/\.jpg/i, '.gif');
+    if (await isHrefValidAsync(src)) {
+      img.src = src;
+    } else if (await isHrefValidAsync(pngSrc)) {
+      img.src = pngSrc;
+      imageLinks[index] = pngSrc;
+    } else {
+      img.src = gifSrc;
+      imageLinks[index] = gifSrc;
+    }
+    return Promise.resolve();
   };
 
   // Populates tags for the current image
@@ -207,6 +217,7 @@
   const hideOverlay = () => {
     imageOverlay.style.display = 'none';
     backgroundOverlay.style.display = 'none';
+    divLoading.style.display = 'none';
   };
   const showOverlay = () => {
     if (firstRun) {
