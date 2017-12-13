@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.8.0
+// @version     1.80
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -128,6 +128,12 @@
     return `/${sectionName}/${tagName}/images`;
   };
 
+  // Get comment elements from the target image page
+  const getComments = async function (imagePageHref) {
+    const comments = (await httpGet(imagePageHref)).getElementsByClassName('image_comments')[0];
+    return Array.from(comments.children);
+  };
+
   // Attaches expand button to thumbnail at index
   const createViewerIcon = function (index) {
     const iconFrame = document.createElement('div');
@@ -156,6 +162,7 @@
     return iconFrame;
   };
 
+  // Attach expand buttons to all thumbnails
   const addViewerIcons = function () {
     const mouseoutEvent = new MouseEvent('mouseout', {});
     const mouseleaveEvent = new MouseEvent('mouseleave', {});
@@ -190,6 +197,10 @@
     imageContainer.appendChild(navNext);
     imageContainer.appendChild(navPrev);
     imageContainer.appendChild(tagOverlay);
+    imageContainer.appendChild(bottomOverlay)
+      .appendChild(commentsLink);
+    bodyFragment.appendChild(commentsBackgroundOverlay)
+      .appendChild(commentsContainer);
     bodyFragment.appendChild(divLoading);
     bodyFragment.appendChild(arrowNext);
     bodyFragment.appendChild(arrowPrev);
@@ -225,6 +236,7 @@
     image.style.filter = null;
     updateTags();
     imageOverlay.scrollTop = 0;
+    enableBottomOverlay();
   };
   const imageLoading = () => {
     divLoading.style.display = 'initial';
@@ -232,10 +244,41 @@
     divLoading.style.opacity = '1';
     image.style.filter = 'brightness(75%)';
   };
-  const showTagOverlay = () => tagOverlay.style.opacity = '1';
-  const hideTagOverlay = () => tagOverlay.style.opacity = '0';
+  const showTagOverlay = () => {
+    tagOverlay.style.opacity = '1';
+    bottomOverlay.style.opacity = '1';
+  };
+  const hideTagOverlay = () => {
+    tagOverlay.style.opacity = '0';
+    bottomOverlay.style.opacity = '0';
+  };
   const enableTagOverlay = () => tagOverlay.style.display = 'initial';
   const disableTagOverlay = () => tagOverlay.style.display = 'none';
+  const enableBottomOverlay = () => bottomOverlay.style.display = 'initial';
+  const showComments = async () => {
+    event.stopPropagation();
+    image.style.filter = 'brightness(75%)';
+    while (commentsContainer.firstChild) {
+      commentsContainer.removeChild(commentsContainer.firstChild);
+    }
+    commentsContainer.appendChild(commentsLoading);
+    commentsLoading.style.display = 'initial';
+    commentsBackgroundOverlay.style.display = 'initial';
+    const comments = await getComments(imagePages[currentImage]);
+    commentsLoading.style.display = 'none';
+    comments.forEach(div => {
+      commentsContainer.appendChild(div);
+    });
+    const textArea = document.getElementById('forum_post_message');
+    Object.assign(textArea.style, {
+      height: '80px',
+      marginTop: '20px'
+    });
+  };
+  const hideComments = () => {
+    commentsBackgroundOverlay.style.display = 'none';
+    image.style.filter = null;
+  };
   const showIconPartial = (viewerIcon) => () => {
     viewerIcon.style.display = 'initial';
     viewerIcon.style.opacity = '1';
@@ -256,6 +299,7 @@
     event = event || window.event;
     if (event.key === 'Escape') {
       hideOverlay();
+      hideComments();
     }
   });
 
@@ -343,15 +387,90 @@
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
     borderRadius: '5px 5px 0 0',
     marginTop: '25px',
-    paddingTop: '5px',
-    paddingBottom: '6px',
-    paddingLeft: '7px',
-    paddingRight: '7px',
+    padding: '5px 7px 6px 7px',
     transition: 'opacity 0.2s',
     display: 'none'
   });
   tagOverlay.onmouseenter = showTagOverlay;
   tagOverlay.onmouseleave = hideTagOverlay;
+
+  // Bottom image overlay (currently contains only comment button)
+  const bottomOverlay = document.createElement('div');
+  bottomOverlay.id = 'gallery-comments';
+  Object.assign(bottomOverlay.style, {
+    position: 'absolute',
+    bottom: '0',
+    left: '0',
+    right: '0',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: '0 0 5px 5px',
+    marginBottom: '25px',
+    padding: '5px 9px 6px 9px',
+    transition: 'opacity 0.2s',
+    textAlign: 'right',
+    display: 'none'
+  });
+  bottomOverlay.onmouseenter = showTagOverlay;
+  bottomOverlay.onmouseleave = hideTagOverlay;
+
+  // Button to show comments
+  const commentsLink = document.createElement('a');
+  commentsLink.id = 'gallery-commentsLink';
+  commentsLink.classList.add('btn', 'btn-small');
+  const commentsLinkIcon = document.createElement('i');
+  commentsLinkIcon.classList.add('icon-comment');
+  commentsLink.appendChild(commentsLinkIcon);
+  commentsLink.appendChild(document.createTextNode(' Comments'));
+  commentsLink.onclick = showComments;
+
+  // Overlay to close comments when clicking outside comments window
+  const commentsBackgroundOverlay = document.createElement('div');
+  commentsBackgroundOverlay.id = 'gallery-commentsBgOverlay';
+  Object.assign(commentsBackgroundOverlay.style, {
+    position: 'fixed',
+    top: '0',
+    left: '0',
+    bottom: '0',
+    right: '0',
+    marginLeft: '-25%',
+    marginRight: '-25%',
+    overflowY: 'auto',
+    willChange: 'transform',
+    // backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    display: 'none'
+  });
+  commentsBackgroundOverlay.onclick = hideComments;
+
+  // Comments window
+  const commentsContainer = document.createElement('div');
+  commentsContainer.id = 'gallery-comments';
+  commentsContainer.classList.add('image_comments');
+  Object.assign(commentsContainer.style, {
+    position: 'absolute',
+    maxWidth: '800px',
+    minWidth: '400px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    backgroundColor: 'white',
+    borderRadius: '6px',
+    boxShadow: '0 10px 60px rgba(0, 0, 0, 0.5)',
+    border: '1px solid rgba(0, 0, 0, 0.2)',
+    padding: '25px 30px',
+    marginTop: '40px',
+    marginBottom: '40px'
+  });
+  commentsContainer.onclick = () => event.stopPropagation();
+
+  // Comments loading text
+  const commentsLoading = document.createElement('h3');
+  commentsLoading.id = 'gallery-commentsLoading';
+  Object.assign(commentsLoading.style, {
+    textAlign: 'center',
+    color: '#888888'
+  });
+  const commentsLoadingText = document.createElement('h3');
+  commentsLoadingText.textContent = 'Loading comments...';
+  commentsLoading.appendChild(commentsLoadingText);
 
   // Navigation arrows
   const arrowStyle = {
