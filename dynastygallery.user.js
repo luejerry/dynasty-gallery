@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.7.1
+// @version     1.8.0
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -64,43 +64,35 @@
   // Fetches and displays the current image
   const updateImage = function () {
     imageLoading();
-    loadImageAsync(image, currentImage);
+    loadImageScrape(image, currentImage);
   };
 
   // Prefetch the prev/next images to cache
   const prefetchImages = function () {
     if (imageLinks[currentImage + 1] !== undefined) {
-      loadImageAsync(imagePrefetchNext, currentImage + 1);
+      loadImageScrape(imagePrefetchNext, currentImage + 1);
     }
     if (imageLinks[currentImage - 1] !== undefined) {
-      loadImageAsync(imagePrefetchPrev, currentImage - 1);
+      loadImageScrape(imagePrefetchPrev, currentImage - 1);
     }
   };
 
-  // Check if a target url exists (returns OK)
-  const isHrefValidAsync = async function (src) {
-    try {
-      await httpGet(src);
-      return true;
-    } catch (err) {
-      return false;
-    }
+  // Scrape the full size image url from the image page
+  const getImageSrc = async function (imagePageHref) {
+    const imagePage = await httpGet(imagePageHref);
+    const image = imagePage.getElementsByClassName('image')[0].firstChild;
+    return image.src;
   };
 
   // Load an image in the image src list
-  const loadImageAsync = async function (img, index) {
-    const src = imageLinks[index];
-    const pngSrc = src.replace(/\.jpg/i, '.png');
-    const gifSrc = src.replace(/\.jpg/i, '.gif');
-    if (await isHrefValidAsync(src)) {
-      img.src = src;
-    } else if (await isHrefValidAsync(pngSrc)) {
-      img.src = pngSrc;
-      imageLinks[index] = pngSrc;
-    } else {
-      img.src = gifSrc;
-      imageLinks[index] = gifSrc;
+  const loadImageScrape = async function (img, index) {
+    if (imageLinks[index]) {
+      img.src = imageLinks[index];
+      return Promise.resolve();
     }
+    const src = await getImageSrc(imagePages[index]);
+    imageLinks[index] = src;
+    img.src = src;
     return Promise.resolve();
   };
 
@@ -450,10 +442,12 @@
     return;
   }
   // Hacky way to get the full size links, but much faster than scraping every image page
-  const imageLinks = thumbnailLinks
-    .map(a => a.getElementsByTagName('img')[0])
-    .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
+  // const imageLinks = thumbnailLinks
+  //   .map(a => a.getElementsByTagName('img')[0])
+  //   .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
+  const imageLinks = thumbnailLinks.map(() => null);
   const imageTags = thumbnailLinks.map(a => a.dataset.content);
+  const imagePages = thumbnailLinks.map(a => a.href);
 
   // Adjust site element margins, this is for preventing background scrolling
   const contentDiv = document.getElementById('content');
