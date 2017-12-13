@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.80
+// @version     1.81
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -256,7 +256,6 @@
   const disableTagOverlay = () => tagOverlay.style.display = 'none';
   const enableBottomOverlay = () => bottomOverlay.style.display = 'initial';
   const showComments = async () => {
-    event.stopPropagation();
     image.style.filter = 'brightness(75%)';
     while (commentsContainer.firstChild) {
       commentsContainer.removeChild(commentsContainer.firstChild);
@@ -412,6 +411,7 @@
   });
   bottomOverlay.onmouseenter = showTagOverlay;
   bottomOverlay.onmouseleave = hideTagOverlay;
+  bottomOverlay.onclick = event => event.stopPropagation();
 
   // Button to show comments
   const commentsLink = document.createElement('a');
@@ -459,7 +459,7 @@
     marginTop: '40px',
     marginBottom: '40px'
   });
-  commentsContainer.onclick = () => event.stopPropagation();
+  commentsContainer.onclick = event => event.stopPropagation();
 
   // Comments loading text
   const commentsLoading = document.createElement('h3');
