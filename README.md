@@ -2,7 +2,19 @@
 
 Adds a modal lightbox image viewer to Dynasty for streamlined image browsing.
 
+## Compatibility note
+Since version 1.7, an updated browser with support for [ES8 async-await](https://caniuse.com/#feat=async-functions) is required. The minimum browser versions supported are:
+
+| Browser | Version | Released |
+|----|----|----|
+| Firefox | 52 | Mar 6, 2017 |
+| Chrome | 55 | Nov 30, 2016 |
+| Safari | 10.1 | Mar 26, 2017 |
+| Edge | 15 | Apr 10, 2017 |
+
 ## Changelog
+* 1.7.1: Fix issue where invisible loading indicator blocks mouse events.
+* 1.7: Breaking change - now uses async-await for asynchronous requests.
 * 1.6.4: Added small delay before loading indicator appears.
 * 1.6.2: Improved scrolling performance of viewer (Chrome).
 * 1.6: Enabled autoupdate. Resolve issue with reduced scrolling performance even when viewer is not open (Chrome/Safari).
