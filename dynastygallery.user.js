@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.81
+// @version     1.82
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -64,33 +64,33 @@
   // Fetches and displays the current image
   const updateImage = function () {
     imageLoading();
-    loadImageScrape(image, currentImage);
+    asyncLoadImage(image, currentImage);
   };
 
   // Prefetch the prev/next images to cache
   const prefetchImages = function () {
     if (imageLinks[currentImage + 1] !== undefined) {
-      loadImageScrape(imagePrefetchNext, currentImage + 1);
+      asyncLoadImage(imagePrefetchNext, currentImage + 1);
     }
     if (imageLinks[currentImage - 1] !== undefined) {
-      loadImageScrape(imagePrefetchPrev, currentImage - 1);
+      asyncLoadImage(imagePrefetchPrev, currentImage - 1);
     }
   };
 
   // Scrape the full size image url from the image page
-  const getImageSrc = async function (imagePageHref) {
+  const asyncGetImageSrc = async function (imagePageHref) {
     const imagePage = await httpGet(imagePageHref);
     const image = imagePage.getElementsByClassName('image')[0].firstChild;
     return image.src;
   };
 
   // Load an image in the image src list
-  const loadImageScrape = async function (img, index) {
+  const asyncLoadImage = async function (img, index) {
     if (imageLinks[index]) {
       img.src = imageLinks[index];
       return Promise.resolve();
     }
-    const src = await getImageSrc(imagePages[index]);
+    const src = await asyncGetImageSrc(imagePages[index]);
     imageLinks[index] = src;
     img.src = src;
     return Promise.resolve();
@@ -129,9 +129,25 @@
   };
 
   // Get comment elements from the target image page
-  const getComments = async function (imagePageHref) {
+  const asyncGetComments = async function (imagePageHref) {
     const comments = (await httpGet(imagePageHref)).getElementsByClassName('image_comments')[0];
     return Array.from(comments.children);
+  };
+
+  // Load and display comments into the comments window
+  const asyncUpdateComments = async function () {
+    commentsList.style.display = 'none';
+    while (commentsList.firstChild) {
+      commentsList.removeChild(commentsList.firstChild);
+    }
+    commentsList.appendChild(commentsLoading);
+    commentsLoading.style.display = 'initial';
+    commentsList.style.display = 'inherit';
+    const comments = await asyncGetComments(imagePages[currentImage]);
+    commentsLoading.style.display = 'none';
+    comments.forEach(div => {
+      commentsList.appendChild(div);
+    });
   };
 
   // Attaches expand button to thumbnail at index
@@ -200,7 +216,8 @@
     imageContainer.appendChild(bottomOverlay)
       .appendChild(commentsLink);
     bodyFragment.appendChild(commentsBackgroundOverlay)
-      .appendChild(commentsContainer);
+      .appendChild(commentsContainer)
+      .appendChild(commentsList);
     bodyFragment.appendChild(divLoading);
     bodyFragment.appendChild(arrowNext);
     bodyFragment.appendChild(arrowPrev);
@@ -256,18 +273,9 @@
   const disableTagOverlay = () => tagOverlay.style.display = 'none';
   const enableBottomOverlay = () => bottomOverlay.style.display = 'initial';
   const showComments = async () => {
-    image.style.filter = 'brightness(75%)';
-    while (commentsContainer.firstChild) {
-      commentsContainer.removeChild(commentsContainer.firstChild);
-    }
-    commentsContainer.appendChild(commentsLoading);
-    commentsLoading.style.display = 'initial';
+    image.style.filter = 'brightness(60%)';
     commentsBackgroundOverlay.style.display = 'initial';
-    const comments = await getComments(imagePages[currentImage]);
-    commentsLoading.style.display = 'none';
-    comments.forEach(div => {
-      commentsContainer.appendChild(div);
-    });
+    await asyncUpdateComments();
     const textArea = document.getElementById('forum_post_message');
     Object.assign(textArea.style, {
       height: '80px',
@@ -436,39 +444,46 @@
     marginRight: '-25%',
     overflowY: 'auto',
     willChange: 'transform',
-    // backgroundColor: 'rgba(0, 0, 0, 0.3)',
     display: 'none'
   });
   commentsBackgroundOverlay.onclick = hideComments;
 
-  // Comments window
+  // Base layer of scrollable comments window
   const commentsContainer = document.createElement('div');
-  commentsContainer.id = 'gallery-comments';
-  commentsContainer.classList.add('image_comments');
+  commentsContainer.id = 'gallery-commentsContainer';
   Object.assign(commentsContainer.style, {
     position: 'absolute',
-    maxWidth: '800px',
+    maxWidth: '760px',
     minWidth: '400px',
     left: '50%',
     transform: 'translateX(-50%)',
+  });
+
+  // Comments window
+  const commentsList = document.createElement('div');
+  commentsList.id = 'gallery-comments';
+  commentsList.classList.add('image_comments');
+  Object.assign(commentsList.style, {
+    margin: 'auto',
+    marginTop: '40px',
+    marginBottom: '40px',
     backgroundColor: 'white',
     borderRadius: '6px',
     boxShadow: '0 10px 60px rgba(0, 0, 0, 0.5)',
     border: '1px solid rgba(0, 0, 0, 0.2)',
     padding: '25px 30px',
-    marginTop: '40px',
-    marginBottom: '40px'
   });
-  commentsContainer.onclick = event => event.stopPropagation();
+  commentsList.onclick = event => event.stopPropagation();
 
   // Comments loading text
-  const commentsLoading = document.createElement('h3');
+  const commentsLoading = document.createElement('div');
   commentsLoading.id = 'gallery-commentsLoading';
   Object.assign(commentsLoading.style, {
     textAlign: 'center',
-    color: '#888888'
+    color: '#888888',
   });
   const commentsLoadingText = document.createElement('h3');
+  commentsLoadingText.style.margin = '0';
   commentsLoadingText.textContent = 'Loading comments...';
   commentsLoading.appendChild(commentsLoadingText);
 
