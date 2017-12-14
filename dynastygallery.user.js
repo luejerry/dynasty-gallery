@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.83
+// @version     1.84
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -405,7 +405,7 @@
 
   // Bottom image overlay (currently contains only comment button)
   const bottomOverlay = document.createElement('div');
-  bottomOverlay.id = 'gallery-comments';
+  bottomOverlay.id = 'gallery-footer';
   Object.assign(bottomOverlay.style, {
     position: 'absolute',
     bottom: '0',
@@ -473,7 +473,7 @@
     borderRadius: '6px',
     boxShadow: '0 10px 60px rgba(0, 0, 0, 0.5)',
     border: '1px solid rgba(0, 0, 0, 0.2)',
-    padding: '10px 40px 25px 30px',
+    padding: '25px 35px',
   });
   commentsList.onclick = event => event.stopPropagation();
 
