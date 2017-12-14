@@ -67,6 +67,13 @@
     asyncLoadImage(image, currentImage);
   };
 
+  const asyncLoadImagePage = async function (index) {
+    const imagePage = await httpGet(imagePage[index]);
+    const comments = Array.from(imagePage.getElementsByClassName('image_comments')[0]);
+    const image = imagePage.getElementsByClassName('image')[0].firstChild;
+    updateComments(comments);
+  };
+
   // Prefetch the prev/next images to cache
   const prefetchImages = function () {
     if (imageLinks[currentImage + 1] !== undefined) {
@@ -77,22 +84,16 @@
     }
   };
 
-  // Scrape the full size image url from the image page
-  const asyncGetImageSrc = async function (imagePageHref) {
-    const imagePage = await httpGet(imagePageHref);
-    const image = imagePage.getElementsByClassName('image')[0].firstChild;
-    return image.src;
-  };
-
   // Load an image in the image src list
   const asyncLoadImage = async function (img, index) {
     if (imageLinks[index]) {
       img.src = imageLinks[index];
       return Promise.resolve();
     }
-    const src = await asyncGetImageSrc(imagePages[index]);
-    imageLinks[index] = src;
-    img.src = src;
+    const imagePage = await httpGet(imagePages[index]);
+    const image = imagePage.getElementsByClassName('image')[0].firstChild;
+    imageLinks[index] = image.src;
+    img.src = image.src;
     return Promise.resolve();
   };
 
@@ -128,14 +129,8 @@
     return `/${sectionName}/${tagName}/images`;
   };
 
-  // Get comment elements from the target image page
-  const asyncGetComments = async function (imagePageHref) {
-    const comments = (await httpGet(imagePageHref)).getElementsByClassName('image_comments')[0];
-    return Array.from(comments.children);
-  };
-
   // Load and display comments into the comments window
-  const asyncUpdateComments = async function () {
+  const updateComments = function (comments) {
     commentsList.style.display = 'none';
     while (commentsList.firstChild) {
       commentsList.removeChild(commentsList.firstChild);
@@ -143,7 +138,7 @@
     commentsList.appendChild(commentsLoading);
     commentsLoading.style.display = 'initial';
     commentsList.style.display = 'inherit';
-    const comments = await asyncGetComments(imagePages[currentImage]);
+    // const comments = await asyncGetComments(imagePages[currentImage]);
     comments.filter(e => e.tagName === 'FORM')
       .map(form => form.getElementsByTagName('textarea')[0])
       .forEach(textarea => Object.assign(textarea.style, {
@@ -282,7 +277,7 @@
   const showComments = () => {
     image.style.filter = 'brightness(70%)';
     commentsBackgroundOverlay.style.display = 'initial';
-    asyncUpdateComments();
+    updateComments();
   };
   const hideComments = () => {
     commentsBackgroundOverlay.style.display = 'none';
