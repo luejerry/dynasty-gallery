@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.85
+// @version     1.86
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -12,7 +12,6 @@
 (function () {
 
   'use strict';
-
   /* Definitions */
 
   // Our global mutable state
@@ -85,8 +84,8 @@
     }
     const imagePage = await httpGet(imagePages[index]);
     const image = imagePage.getElementsByClassName('image')[0].firstChild;
-    imageLinks[index] = image.src;
     img.src = image.src;
+    imageLinks[index] = image.src;
     return imagePage;
   };
 
@@ -94,6 +93,10 @@
   const updateTags = function (imagePage) {
     const tags = Array.from(imagePage.getElementsByClassName('tags')[0].children)
       .filter(e => e.tagName === 'A');
+    if (!tags.length) {
+      return;
+    }
+    tagOverlay.style.display = 'none';
     while (tagOverlay.firstChild) {
       tagOverlay.removeChild(tagOverlay.firstChild);
     }
@@ -101,11 +104,15 @@
       tag.style.marginRight = '3px';
       tagOverlay.appendChild(tag);
     });
+    tagOverlay.style.display = 'inherit';
   };
 
   // Load and display comments into the comments window
   const updateComments = function (imagePage) {
     const comments = Array.from(imagePage.getElementsByClassName('image_comments')[0].children);
+    if (!comments.length) {
+      return;
+    }
     commentsLinkBadge.textContent = `${comments.length - 1}`;
     commentsList.style.display = 'none';
     while (commentsList.firstChild) {
