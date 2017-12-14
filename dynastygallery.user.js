@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.82
+// @version     1.83
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -144,6 +144,13 @@
     commentsLoading.style.display = 'initial';
     commentsList.style.display = 'inherit';
     const comments = await asyncGetComments(imagePages[currentImage]);
+    comments.filter(e => e.tagName === 'FORM')
+      .map(form => form.getElementsByTagName('textarea')[0])
+      .forEach(textarea => Object.assign(textarea.style, {
+        height: '80px',
+        marginTop: '20px',
+        maxWidth: '624px',
+      }));
     commentsLoading.style.display = 'none';
     comments.forEach(div => {
       commentsList.appendChild(div);
@@ -272,15 +279,10 @@
   const enableTagOverlay = () => tagOverlay.style.display = 'initial';
   const disableTagOverlay = () => tagOverlay.style.display = 'none';
   const enableBottomOverlay = () => bottomOverlay.style.display = 'initial';
-  const showComments = async () => {
-    image.style.filter = 'brightness(60%)';
+  const showComments = () => {
+    image.style.filter = 'brightness(70%)';
     commentsBackgroundOverlay.style.display = 'initial';
-    await asyncUpdateComments();
-    const textArea = document.getElementById('forum_post_message');
-    Object.assign(textArea.style, {
-      height: '80px',
-      marginTop: '20px'
-    });
+    asyncUpdateComments();
   };
   const hideComments = () => {
     commentsBackgroundOverlay.style.display = 'none';
@@ -453,7 +455,7 @@
   commentsContainer.id = 'gallery-commentsContainer';
   Object.assign(commentsContainer.style, {
     position: 'absolute',
-    maxWidth: '760px',
+    maxWidth: '700px',
     minWidth: '400px',
     left: '50%',
     transform: 'translateX(-50%)',
@@ -471,7 +473,7 @@
     borderRadius: '6px',
     boxShadow: '0 10px 60px rgba(0, 0, 0, 0.5)',
     border: '1px solid rgba(0, 0, 0, 0.2)',
-    padding: '25px 30px',
+    padding: '10px 40px 25px 30px',
   });
   commentsList.onclick = event => event.stopPropagation();
 
