@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.84
+// @version     1.85
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -17,6 +17,7 @@
 
   // Our global mutable state
   let currentImage = 0;
+  let currentImagePage;
   let firstRun = true;
 
   // Promisify XMLHttpRequest
@@ -61,17 +62,10 @@
     prefetchImages();
   };
 
-  // Fetches and displays the current image
-  const updateImage = function () {
+  // Fetch and display current image
+  const updateImage = async function () {
     imageLoading();
-    asyncLoadImage(image, currentImage);
-  };
-
-  const asyncLoadImagePage = async function (index) {
-    const imagePage = await httpGet(imagePage[index]);
-    const comments = Array.from(imagePage.getElementsByClassName('image_comments')[0]);
-    const image = imagePage.getElementsByClassName('image')[0].firstChild;
-    updateComments(comments);
+    currentImagePage = await asyncLoadImage(image, currentImage);
   };
 
   // Prefetch the prev/next images to cache
@@ -84,61 +78,39 @@
     }
   };
 
-  // Load an image in the image src list
+  // Fetch the target image page and load its image into given img
   const asyncLoadImage = async function (img, index) {
     if (imageLinks[index]) {
       img.src = imageLinks[index];
-      return Promise.resolve();
     }
     const imagePage = await httpGet(imagePages[index]);
     const image = imagePage.getElementsByClassName('image')[0].firstChild;
     imageLinks[index] = image.src;
     img.src = image.src;
-    return Promise.resolve();
+    return imagePage;
   };
 
   // Populates tags for the current image
-  const updateTags = function () {
-    const tagsHtml = imageTags[currentImage];
-    if (tagsHtml === undefined) {
-      disableTagOverlay();
-    } else {
-      disableTagOverlay();
-      tagOverlay.innerHTML = imageTags[currentImage];
-      const tagElements = Array.from(tagOverlay.getElementsByClassName('label'));
-      tagElements.forEach(label => {
-        const tagLink = document.createElement('a');
-        tagLink.href = tagToHref(label.textContent);
-        tagLink.appendChild(label);
-        tagOverlay.appendChild(tagLink);
-        const spacer = document.createElement('text');
-        spacer.textContent = ' ';
-        tagOverlay.appendChild(spacer);
-      });
-      enableTagOverlay();
+  const updateTags = function (imagePage) {
+    const tags = Array.from(imagePage.getElementsByClassName('tags')[0].children)
+      .filter(e => e.tagName === 'A');
+    while (tagOverlay.firstChild) {
+      tagOverlay.removeChild(tagOverlay.firstChild);
     }
-  };
-
-  // Generates tag url from its text
-  const tagToHref = function (tagText) {
-    const matches = tagText.match(/^(?:(Author|Doujin|Series|Pairing|Scanlator): )?(.*)$/);
-    const section = (matches[1] || 'tag').toLowerCase();
-    const sectionName = section !== 'series' ? section + 's' : section;
-    const tagWords = matches[2].match(/(\w+)/g);
-    const tagName = tagWords === null ? 'blank' : tagWords.join('_').toLowerCase();
-    return `/${sectionName}/${tagName}/images`;
+    tags.forEach(tag => {
+      tag.style.marginRight = '3px';
+      tagOverlay.appendChild(tag);
+    });
   };
 
   // Load and display comments into the comments window
-  const updateComments = function (comments) {
+  const updateComments = function (imagePage) {
+    const comments = Array.from(imagePage.getElementsByClassName('image_comments')[0].children);
+    commentsLinkBadge.textContent = `${comments.length - 1}`;
     commentsList.style.display = 'none';
     while (commentsList.firstChild) {
       commentsList.removeChild(commentsList.firstChild);
     }
-    commentsList.appendChild(commentsLoading);
-    commentsLoading.style.display = 'initial';
-    commentsList.style.display = 'inherit';
-    // const comments = await asyncGetComments(imagePages[currentImage]);
     comments.filter(e => e.tagName === 'FORM')
       .map(form => form.getElementsByTagName('textarea')[0])
       .forEach(textarea => Object.assign(textarea.style, {
@@ -146,10 +118,10 @@
         marginTop: '20px',
         maxWidth: '624px',
       }));
-    commentsLoading.style.display = 'none';
     comments.forEach(div => {
       commentsList.appendChild(div);
     });
+    commentsList.style.display = 'inherit';
   };
 
   // Attaches expand button to thumbnail at index
@@ -253,8 +225,10 @@
     divLoading.style.display = 'none';
     divLoading.style.opacity = '0';
     image.style.filter = null;
-    updateTags();
     imageOverlay.scrollTop = 0;
+    updateComments(currentImagePage);
+    updateTags(currentImagePage);
+    enableTagOverlay();
     enableBottomOverlay();
   };
   const imageLoading = () => {
@@ -272,12 +246,11 @@
     bottomOverlay.style.opacity = '0';
   };
   const enableTagOverlay = () => tagOverlay.style.display = 'initial';
-  const disableTagOverlay = () => tagOverlay.style.display = 'none';
   const enableBottomOverlay = () => bottomOverlay.style.display = 'initial';
   const showComments = () => {
     image.style.filter = 'brightness(70%)';
     commentsBackgroundOverlay.style.display = 'initial';
-    updateComments();
+    // updateComments();
   };
   const hideComments = () => {
     commentsBackgroundOverlay.style.display = 'none';
@@ -424,8 +397,11 @@
   commentsLink.classList.add('btn', 'btn-small');
   const commentsLinkIcon = document.createElement('i');
   commentsLinkIcon.classList.add('icon-comment');
+  const commentsLinkBadge = document.createTextNode('0');
   commentsLink.appendChild(commentsLinkIcon);
-  commentsLink.appendChild(document.createTextNode(' Comments'));
+  commentsLink.appendChild(document.createTextNode(' Comments ('));
+  commentsLink.appendChild(commentsLinkBadge);
+  commentsLink.appendChild(document.createTextNode(')'));
   commentsLink.onclick = showComments;
 
   // Overlay to close comments when clicking outside comments window
@@ -471,18 +447,6 @@
     padding: '25px 35px',
   });
   commentsList.onclick = event => event.stopPropagation();
-
-  // Comments loading text
-  const commentsLoading = document.createElement('div');
-  commentsLoading.id = 'gallery-commentsLoading';
-  Object.assign(commentsLoading.style, {
-    textAlign: 'center',
-    color: '#888888',
-  });
-  const commentsLoadingText = document.createElement('h3');
-  commentsLoadingText.style.margin = '0';
-  commentsLoadingText.textContent = 'Loading comments...';
-  commentsLoading.appendChild(commentsLoadingText);
 
   // Navigation arrows
   const arrowStyle = {
@@ -572,12 +536,8 @@
   if (thumbnailLinks.length === 0) {
     return;
   }
-  // Hacky way to get the full size links, but much faster than scraping every image page
-  // const imageLinks = thumbnailLinks
-  //   .map(a => a.getElementsByTagName('img')[0])
-  //   .map(img => img.src.replace('/medium/', '/original/').replace('/thumb/', '/original/'));
-  const imageLinks = thumbnailLinks.map(() => null);
-  const imageTags = thumbnailLinks.map(a => a.dataset.content);
+
+  const imageLinks = thumbnailLinks.map(() => null); // this is populated as images are viewed
   const imagePages = thumbnailLinks.map(a => a.href);
 
   // Adjust site element margins, this is for preventing background scrolling
