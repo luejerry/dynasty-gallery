@@ -13,6 +13,7 @@ Since version 1.7, an updated browser with support for [ES8 async-await](https:/
 | Edge | 15 | Apr 10, 2017 |
 
 ## Changelog
+* 1.8.5: Comments button now shows number of comments. Comments now load instantly.
 * 1.8.0: Can now view and post image comments directly in the viewer.
 * 1.7.1: Fix issue where invisible loading indicator blocks mouse events.
 * 1.7: Breaking change - now uses async-await for asynchronous requests.
