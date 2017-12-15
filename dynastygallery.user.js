@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.86
+// @version     1.87
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -327,7 +327,7 @@
     left: '0',
     marginLeft: '-25%',
     marginRight: '-25%',
-    overflowY: 'auto',
+    overflowY: 'scroll',
     willChange: 'transform',
   });
   imageOverlay.onclick = hideOverlay;
@@ -420,9 +420,9 @@
     left: '0',
     bottom: '0',
     right: '0',
-    marginLeft: '-25%',
-    marginRight: '-25%',
-    overflowY: 'auto',
+    marginLeft: '-20px',
+    marginRight: '-20px',
+    overflowY: 'scroll',
     willChange: 'transform',
     display: 'none',
   });
