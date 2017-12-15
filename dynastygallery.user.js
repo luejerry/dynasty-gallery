@@ -145,7 +145,7 @@
       borderRadius: '0 2px 0 2px',
       textAlign: 'center',
       transition: 'opacity 0.2s',
-      display: 'none'
+      display: 'none',
     });
     const icon = document.createElement('i');
     icon.classList.add('icon-resize-full');
@@ -300,7 +300,7 @@
     width: '100%',
     height: '100%',
     overflow: 'auto',
-    display: 'none'
+    display: 'none',
   });
 
   // Overlay to darken background page
@@ -328,7 +328,7 @@
     marginLeft: '-25%',
     marginRight: '-25%',
     overflowY: 'auto',
-    willChange: 'transform'
+    willChange: 'transform',
   });
   imageOverlay.onclick = hideOverlay;
 
@@ -352,7 +352,7 @@
     display: 'block',
     borderRadius: '5px',
     marginTop: '25px',
-    marginBottom: '25px'
+    marginBottom: '25px',
   });
   image.onload = imageLoaded;
 
@@ -373,7 +373,7 @@
     marginTop: '25px',
     padding: '5px 7px 6px 7px',
     transition: 'opacity 0.2s',
-    display: 'none'
+    display: 'none',
   });
   tagOverlay.onmouseenter = showTagOverlay;
   tagOverlay.onmouseleave = hideTagOverlay;
@@ -392,7 +392,7 @@
     padding: '5px 9px 6px 9px',
     transition: 'opacity 0.2s',
     textAlign: 'right',
-    display: 'none'
+    display: 'none',
   });
   bottomOverlay.onmouseenter = showTagOverlay;
   bottomOverlay.onmouseleave = hideTagOverlay;
@@ -424,7 +424,7 @@
     marginRight: '-25%',
     overflowY: 'auto',
     willChange: 'transform',
-    display: 'none'
+    display: 'none',
   });
   commentsBackgroundOverlay.onclick = hideComments;
 
@@ -466,21 +466,21 @@
     fontSize: '36px',
     fontWeight: 'bold',
     WebkitTextStroke: '1.5px white',
-    display: 'none'
+    display: 'none',
   };
   const arrowPrev = document.createElement('div');
   arrowPrev.id = 'gallery-prevIcon';
   arrowPrev.textContent = '❮';
   Object.assign(arrowPrev.style, arrowStyle);
   Object.assign(arrowPrev.style, {
-    left: '0'
+    left: '0',
   });
   const arrowNext = document.createElement('div');
   arrowNext.id = 'gallery-nextIcon';
   arrowNext.textContent = '❯';
   Object.assign(arrowNext.style, arrowStyle);
   Object.assign(arrowNext.style, {
-    right: '0'
+    right: '0',
   });
 
   // Navigation overlay buttons
@@ -488,14 +488,14 @@
     position: 'absolute',
     top: '0',
     bottom: '0',
-    cursor: 'pointer'
+    cursor: 'pointer',
   };
   const navNext = document.createElement('div');
   Object.assign(navNext.style, navStyle);
   Object.assign(navNext.style, {
     left: '50%',
     right: '0',
-    textAlign: 'right'
+    textAlign: 'right',
   });
   navNext.onclick = nextClicked;
   navNext.onmouseenter = showNavPartial(arrowNext);
@@ -505,7 +505,7 @@
   Object.assign(navPrev.style, {
     left: '0',
     right: '50%',
-    textAlign: 'left'
+    textAlign: 'left',
   });
   navPrev.onclick = prevClicked;
   navPrev.onmouseenter = showNavPartial(arrowPrev);
@@ -527,7 +527,7 @@
     borderRadius: '2px',
     transition: 'opacity 0.1s',
     transitionDelay: '0.3s',
-    opacity: '0'
+    opacity: '0',
   });
   divLoading.textContent = 'Loading...';
 

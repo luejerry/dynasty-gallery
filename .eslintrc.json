@@ -39,6 +39,7 @@
         "comma-spacing": "warn",
         "max-len": ["warn", { "code": 100 }],
         "no-var": "error",
-        "prefer-const": "warn"
+        "prefer-const": "warn",
+        "comma-dangle": ["warn", "always-multiline"]
     }
 }
