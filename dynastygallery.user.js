@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     1.87
+// @version     1.90
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -131,6 +131,21 @@
     commentsList.style.display = 'inherit';
   };
 
+  const updateImageSource = function (imagePage) {
+    const imageSource = Array.from(imagePage.getElementsByClassName('btn'))
+      .find(btn => btn.textContent === ' Source');
+    if (imageSource) {
+      sourceLink.style.display = 'inherit';
+      sourceLink.href = imageSource.href;
+    } else {
+      sourceLink.style.display = 'none';
+    }
+  };
+
+  const updateImageRaw = function (src) {
+    rawLink.href = src;
+  };
+
   // Attaches expand button to thumbnail at index
   const createViewerIcon = function (index) {
     const iconFrame = document.createElement('div');
@@ -195,7 +210,10 @@
     imageContainer.appendChild(navPrev);
     imageContainer.appendChild(tagOverlay);
     imageContainer.appendChild(bottomOverlay)
-      .appendChild(commentsLink);
+      .appendChild(bottomButtonGroup);
+    bottomButtonGroup.appendChild(rawLink);
+    bottomButtonGroup.appendChild(sourceLink);
+    bottomButtonGroup.appendChild(commentsLink);
     bodyFragment.appendChild(commentsBackgroundOverlay)
       .appendChild(commentsContainer)
       .appendChild(commentsList);
@@ -235,6 +253,8 @@
     imageOverlay.scrollTop = 0;
     updateComments(currentImagePage);
     updateTags(currentImagePage);
+    updateImageSource(currentImagePage);
+    updateImageRaw(image.src);
     enableTagOverlay();
     enableBottomOverlay();
   };
@@ -257,6 +277,7 @@
   const showComments = () => {
     image.style.filter = 'brightness(70%)';
     commentsBackgroundOverlay.style.display = 'initial';
+    commentsBackgroundOverlay.scrollTop = 0;
     // updateComments();
   };
   const hideComments = () => {
@@ -398,18 +419,48 @@
   bottomOverlay.onmouseleave = hideTagOverlay;
   bottomOverlay.onclick = event => event.stopPropagation();
 
+  // Bottom bar button group
+  const bottomButtonGroup = document.createElement('div');
+  bottomButtonGroup.classList.add('btn-group');
+
   // Button to show comments
   const commentsLink = document.createElement('a');
   commentsLink.id = 'gallery-commentsLink';
   commentsLink.classList.add('btn', 'btn-small');
+  commentsLink.setAttribute('data-toggle', 'tooltip');
+  commentsLink.setAttribute('data-placement', 'top');
+  commentsLink.setAttribute('title', 'View comments');
   const commentsLinkIcon = document.createElement('i');
   commentsLinkIcon.classList.add('icon-comment');
   const commentsLinkBadge = document.createTextNode('0');
   commentsLink.appendChild(commentsLinkIcon);
-  commentsLink.appendChild(document.createTextNode(' Comments ('));
+  commentsLink.appendChild(document.createTextNode(' '));
   commentsLink.appendChild(commentsLinkBadge);
-  commentsLink.appendChild(document.createTextNode(')'));
   commentsLink.onclick = showComments;
+
+  // Link to source
+  const sourceLink = document.createElement('a');
+  sourceLink.id = 'gallery-sourceLink';
+  sourceLink.classList.add('btn', 'btn-small');
+  sourceLink.setAttribute('data-toggle', 'tooltip');
+  sourceLink.setAttribute('data-placement', 'top');
+  sourceLink.setAttribute('title', 'Go to source');
+  const sourceLinkIcon = document.createElement('i');
+  sourceLinkIcon.classList.add('icon-globe');
+  sourceLink.appendChild(sourceLinkIcon);
+  // sourceLink.appendChild(document.createTextNode(' Source'));
+
+  // Link to raw image
+  const rawLink = document.createElement('a');
+  rawLink.id = 'gallery-rawLink';
+  rawLink.classList.add('btn', 'btn-small');
+  rawLink.setAttribute('data-toggle', 'tooltip');
+  rawLink.setAttribute('data-placement', 'top');
+  rawLink.setAttribute('title', 'Open image');
+  const rawLinkIcon = document.createElement('i');
+  rawLinkIcon.classList.add('icon-picture');
+  rawLink.appendChild(rawLinkIcon);
+  // rawLink.appendChild(document.createTextNode(' Open Image'));
 
   // Overlay to close comments when clicking outside comments window
   const commentsBackgroundOverlay = document.createElement('div');
@@ -557,4 +608,5 @@
   document.body.insertBefore(contentContainer, contentDiv.nextSibling);
   hideOverlay();
   document.body.appendChild(createViewerElements());
+  window.jQuery('[data-toggle="tooltip"]').tooltip({container: 'body'});
 })();
