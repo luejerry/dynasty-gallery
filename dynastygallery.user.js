@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     2.0.0
+// @version     2.0.1
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
