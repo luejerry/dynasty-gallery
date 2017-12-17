@@ -210,7 +210,8 @@
     imageContainer.appendChild(navPrev);
     imageContainer.appendChild(tagOverlay);
     imageContainer.appendChild(bottomOverlay)
-      .appendChild(bottomButtonGroup);
+      .appendChild(bottomTooltips);
+    bottomOverlay.appendChild(bottomButtonGroup);
     bottomButtonGroup.appendChild(rawLink);
     bottomButtonGroup.appendChild(sourceLink);
     bottomButtonGroup.appendChild(commentsLink);
@@ -421,7 +422,17 @@
 
   // Bottom bar button group
   const bottomButtonGroup = document.createElement('div');
+  bottomButtonGroup.id = 'gallery-buttons';
   bottomButtonGroup.classList.add('btn-group');
+
+  // Hidden container for button tooltips
+  const bottomTooltips = document.createElement('div');
+  bottomTooltips.id = 'gallery-tooltips';
+  Object.assign(bottomTooltips.style, {
+    position: 'absolute',
+    left: '-50px',
+    right: '-50px',
+  });
 
   // Button to show comments
   const commentsLink = document.createElement('a');
@@ -429,6 +440,7 @@
   commentsLink.classList.add('btn', 'btn-small');
   commentsLink.setAttribute('data-toggle', 'tooltip');
   commentsLink.setAttribute('data-placement', 'top');
+  commentsLink.setAttribute('data-container', '#gallery-tooltips');
   commentsLink.setAttribute('title', 'View comments');
   const commentsLinkIcon = document.createElement('i');
   commentsLinkIcon.classList.add('icon-comment');
@@ -444,6 +456,7 @@
   sourceLink.classList.add('btn', 'btn-small');
   sourceLink.setAttribute('data-toggle', 'tooltip');
   sourceLink.setAttribute('data-placement', 'top');
+  sourceLink.setAttribute('data-container', '#gallery-tooltips');
   sourceLink.setAttribute('title', 'Go to source');
   const sourceLinkIcon = document.createElement('i');
   sourceLinkIcon.classList.add('icon-globe');
@@ -456,6 +469,7 @@
   rawLink.classList.add('btn', 'btn-small');
   rawLink.setAttribute('data-toggle', 'tooltip');
   rawLink.setAttribute('data-placement', 'top');
+  rawLink.setAttribute('data-container', '#gallery-tooltips');
   rawLink.setAttribute('title', 'Open image');
   const rawLinkIcon = document.createElement('i');
   rawLinkIcon.classList.add('icon-picture');
@@ -608,5 +622,5 @@
   document.body.insertBefore(contentContainer, contentDiv.nextSibling);
   hideOverlay();
   document.body.appendChild(createViewerElements());
-  window.jQuery('[data-toggle="tooltip"]').tooltip({container: 'body'});
+  window.jQuery('[data-toggle="tooltip"]').tooltip();
 })();
