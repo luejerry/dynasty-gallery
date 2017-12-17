@@ -85,6 +85,7 @@
     }
     const imagePage = await httpGet(imagePages[index]);
     const image = imagePage.getElementsByClassName('image')[0].firstChild;
+    img.src = '';
     img.src = image.src;
     imageLinks[index] = image.src;
     return imagePage;
