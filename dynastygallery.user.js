@@ -18,6 +18,7 @@
   let currentImage = 0;
   let currentImagePage;
   let firstRun = true;
+  let viewerOpen = false;
 
   // Promisify XMLHttpRequest
   const httpGet = function (url) {
@@ -224,6 +225,14 @@
     return bodyFragment;
   };
 
+  // Initialize viewer elements and load into the DOM
+  const initializeViewer = function () {
+    document.body.insertBefore(contentContainer, contentDiv.nextSibling);
+    hideOverlay();
+    document.body.appendChild(createViewerElements());
+    window.jQuery('[data-toggle="tooltip"]').tooltip();
+  };
+
 
   /* Event handlers */
   const prevClicked = event => {
@@ -238,14 +247,17 @@
     imageOverlay.style.display = 'none';
     backgroundOverlay.style.display = 'none';
     divLoading.style.display = 'none';
+    viewerOpen = false;
   };
   const showOverlay = () => {
     if (firstRun) {
       firstRun = false;
+      initializeViewer();
       wrapContentDiv();
     }
     imageOverlay.style.display = 'initial';
     backgroundOverlay.style.display = 'initial';
+    viewerOpen = true;
   };
   const imageLoaded = () => {
     divLoading.style.display = 'none';
@@ -300,12 +312,26 @@
   };
 
 
-  /* Bind ESC key to close overlay */
+  /* Keybindings */
+  // Esc key closes viewer
   document.addEventListener('keydown', event => {
-    event = event || window.event;
     if (event.key === 'Escape') {
       hideOverlay();
       hideComments();
+    }
+  });
+
+  // Arrow key navigation
+  document.addEventListener('keydown', event => {
+    if (viewerOpen && event.key === 'ArrowLeft') {
+      hideComments();
+      prevImage();
+    }
+  });
+  document.addEventListener('keydown', event => {
+    if (viewerOpen && event.key === 'ArrowRight') {
+      hideComments();
+      nextImage();
     }
   });
 
@@ -617,10 +643,6 @@
   contentDiv.style.marginBottom = '20px';
   document.body.style.marginBottom = '0px';
 
-  // Put everything into the DOM
+  // Put viewer icons into the DOM
   addViewerIcons();
-  document.body.insertBefore(contentContainer, contentDiv.nextSibling);
-  hideOverlay();
-  document.body.appendChild(createViewerElements());
-  window.jQuery('[data-toggle="tooltip"]').tooltip();
 })();
