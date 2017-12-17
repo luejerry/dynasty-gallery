@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     2.0.1
+// @version     2.0.2
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -85,7 +85,9 @@
     }
     const imagePage = await httpGet(imagePages[index]);
     const image = imagePage.getElementsByClassName('image')[0].firstChild;
-    img.src = '';
+    if (image.complete) { // workaround for Safari, otherwise onload event does not trigger again
+      img.src = '';
+    }
     img.src = image.src;
     imageLinks[index] = image.src;
     return imagePage;
