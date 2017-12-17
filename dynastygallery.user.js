@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     2.0.2
+// @version     2.0.3
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -66,6 +66,9 @@
   const updateImage = async function () {
     imageLoading();
     currentImagePage = await asyncLoadImage(image, currentImage);
+    if (image.complete) { // workaround for Safari
+      imageLoaded();
+    }
   };
 
   // Prefetch the prev/next images to cache
@@ -84,12 +87,9 @@
       img.src = imageLinks[index];
     }
     const imagePage = await httpGet(imagePages[index]);
-    const image = imagePage.getElementsByClassName('image')[0].firstChild;
-    if (image.complete) { // workaround for Safari, otherwise onload event does not trigger again
-      img.src = '';
-    }
-    img.src = image.src;
-    imageLinks[index] = image.src;
+    const fullImage = imagePage.getElementsByClassName('image')[0].firstChild;
+    img.src = fullImage.src;
+    imageLinks[index] = fullImage.src;
     return imagePage;
   };
 
