@@ -13,6 +13,7 @@ Since version 1.7, an updated browser with support for [ES8 async-await](https:/
 | Edge | 15 | Apr 10, 2017 |
 
 ## Changelog
+* 1.9.1: Fix minor issues with tooltip behavior.
 * 1.9.0: Added image source and open image buttons to viewer. Styling adjustments.
 * 1.8.7: Fix image and comment windows sometimes not aligning with each other.
 * 1.8.5: Comments button now shows number of comments. Comments now load instantly.
