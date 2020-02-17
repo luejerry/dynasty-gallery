@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     2.0.3
+// @version     2.0.4
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -36,6 +36,11 @@
       xhttp.send();
     });
   };
+
+  // Utility to check if element is an input field
+  const isTextField = function (element) {
+    return ['TEXTAREA', 'INPUT'].includes(element.tagName);
+  }
 
   // Moves to and displays next image
   const nextImage = function () {
@@ -326,13 +331,13 @@
 
   // Arrow key navigation
   document.addEventListener('keydown', event => {
-    if (viewerOpen && event.key === 'ArrowLeft') {
+    if (viewerOpen && event.key === 'ArrowLeft' && !isTextField(event.target)) {
       hideComments();
       prevImage();
     }
   });
   document.addEventListener('keydown', event => {
-    if (viewerOpen && event.key === 'ArrowRight') {
+    if (viewerOpen && event.key === 'ArrowRight' && !isTextField(event.target)) {
       hideComments();
       nextImage();
     }

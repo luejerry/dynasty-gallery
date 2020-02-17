@@ -13,6 +13,7 @@ Since version 1.7, an updated browser with support for [ES8 async-await](https:/
 | Edge | 15 | Apr 10, 2017 |
 
 ## Changelog
+* 2.0.4: Prevent arrow key navigation from triggering when editing a comment box.
 * 2.0.1: Fix tags/comments failing to update on Safari.
 * 2.0.0: Enabled arrow key next/prev navigation. Viewer is now lazy loaded on first open.
 * 1.9.1: Fix minor issues with tooltip behavior.
