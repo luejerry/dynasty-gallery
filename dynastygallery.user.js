@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     2.0.4
+// @version     2.1.0
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -79,23 +79,54 @@
   // Prefetch the prev/next images to cache
   const prefetchImages = function () {
     if (imageLinks[currentImage + 1] !== undefined) {
-      asyncLoadImage(imagePrefetchNext, currentImage + 1);
+      asyncPrefetchImage(currentImage + 1);
     }
     if (imageLinks[currentImage - 1] !== undefined) {
-      asyncLoadImage(imagePrefetchPrev, currentImage - 1);
+      asyncPrefetchImage(currentImage - 1);
     }
   };
 
-  // Fetch the target image page and load its image into given img
-  const asyncLoadImage = async function (img, index) {
-    if (imageLinks[index]) {
-      img.src = imageLinks[index];
-    }
+  // Prefetch image at index to the cache
+  const asyncPrefetchImage = async function (index) {
     const imagePage = await httpGet(imagePages[index]);
     const fullImage = imagePage.getElementsByClassName('image')[0].firstChild;
-    img.src = fullImage.src;
-    imageLinks[index] = fullImage.src;
-    return imagePage;
+    await httpGet(fullImage.src);
+  }
+
+  // Fetch the target image page and load its image into given img
+  const asyncLoadImage = async function (img, index) {
+    let imagePage;
+    updateLoadingProgress(0);
+    if (!imageLinks[index]) {
+      // Need to follow link to page to get the image URL
+      imagePage = await httpGet(imagePages[index]);
+      const fullImage = imagePage.getElementsByClassName('image')[0].firstChild;
+      imageLinks[index] = fullImage.src;
+    }
+    // We need image page to be returned, so if we skipped it earlier issue a concurrent request
+    // for it while we load the image
+    const imagePagePromise = !imagePage && httpGet(imagePages[index]);
+
+    // Try using fetch so that image loading progress can be shown
+    const response = await fetch(imageLinks[index]);
+    const size = response.headers.get('Content-Length');
+    if (size) {
+      const buffer = new Uint8Array(size);
+      const reader = response.body.getReader();
+      let bufferIndex = 0;
+      while(true) {
+        const {done, value} = await reader.read();
+        if (done) {
+          break;
+        }
+        buffer.set(value, bufferIndex);
+        bufferIndex += value.length;
+        updateLoadingProgress(bufferIndex / size);
+      }
+    }
+
+    img.src = imageLinks[index];
+    return imagePage || await imagePagePromise;
   };
 
   // Populates tags for the current image
@@ -227,6 +258,7 @@
     bodyFragment.appendChild(commentsBackgroundOverlay)
       .appendChild(commentsContainer)
       .appendChild(commentsList);
+    divLoading.appendChild(divLoadingProgress);
     bodyFragment.appendChild(divLoading);
     bodyFragment.appendChild(arrowNext);
     bodyFragment.appendChild(arrowPrev);
@@ -285,6 +317,10 @@
     divLoading.style.opacity = '1';
     image.style.filter = 'brightness(75%)';
   };
+  const updateLoadingProgress = (fraction) => {
+    divLoadingProgress.style.width = `${Math.round(fraction * 100)}%`;
+    divLoadingProgress.style.opacity = (0 < fraction && fraction < 1) ? '1' : '0';
+  }
   const showTagOverlay = () => {
     tagOverlay.style.opacity = '1';
     bottomOverlay.style.opacity = '1';
@@ -411,10 +447,6 @@
     marginBottom: '25px',
   });
   image.onload = imageLoaded;
-
-  // Prefetched images
-  const imagePrefetchNext = document.createElement('img');
-  const imagePrefetchPrev = document.createElement('img');
 
   // Tag overlay
   const tagOverlay = document.createElement('div');
@@ -629,6 +661,14 @@
     opacity: '0',
   });
   divLoading.textContent = 'Loading...';
+  // Loading progress bar
+  const divLoadingProgress = document.createElement('div');
+  Object.assign(divLoadingProgress.style, {
+    height: '2px',
+    background: 'white',
+    width: '0%',
+    transition: 'width 0.15s ease-out, opacity 0.2s linear 0.3s',
+  });
 
 
   /* Main */

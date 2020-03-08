@@ -2,17 +2,8 @@
 
 Adds a modal lightbox image viewer to Dynasty for streamlined image browsing.
 
-## Compatibility note
-Since version 1.7, an updated browser with support for [ES8 async-await](https://caniuse.com/#feat=async-functions) is required. The minimum browser versions supported are:
-
-| Browser | Version | Released |
-|----|----|----|
-| Firefox | 52 | Mar 6, 2017 |
-| Chrome | 55 | Nov 30, 2016 |
-| Safari | 10.1 | Mar 26, 2017 |
-| Edge | 15 | Apr 10, 2017 |
-
 ## Changelog
+* 2.1.0: Show loading progress bar in loading indicator.
 * 2.0.4: Prevent arrow key navigation from triggering when editing a comment box.
 * 2.0.1: Fix tags/comments failing to update on Safari.
 * 2.0.0: Enabled arrow key next/prev navigation. Viewer is now lazy loaded on first open.
