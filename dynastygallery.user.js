@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     2.1.0
+// @version     2.1.1
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -110,7 +110,7 @@
     // Try using fetch so that image loading progress can be shown
     const response = await fetch(imageLinks[index]);
     const size = response.headers.get('Content-Length');
-    if (size) {
+    if (response.body.getReader && size) {
       const buffer = new Uint8Array(size);
       const reader = response.body.getReader();
       let bufferIndex = 0;
