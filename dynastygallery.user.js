@@ -2,7 +2,7 @@
 // @name        Dynasty Gallery View
 // @namespace   dynasty-scans.com
 // @include     https://dynasty-scans.com/*
-// @version     2.1.1
+// @version     2.1.3
 // @grant       none
 // @author      cyricc
 // @downloadURL https://github.com/luejerry/dynasty-gallery/raw/master/dynastygallery.user.js
@@ -111,17 +111,15 @@
     const response = await fetch(imageLinks[index]);
     const size = response.headers.get('Content-Length');
     if (response.body.getReader && size) {
-      const buffer = new Uint8Array(size);
       const reader = response.body.getReader();
-      let bufferIndex = 0;
+      let progress = 0;
       while(true) {
         const {done, value} = await reader.read();
         if (done) {
           break;
         }
-        buffer.set(value, bufferIndex);
-        bufferIndex += value.length;
-        updateLoadingProgress(bufferIndex / size);
+        progress += value.length;
+        updateLoadingProgress(progress / size);
       }
     }
 
